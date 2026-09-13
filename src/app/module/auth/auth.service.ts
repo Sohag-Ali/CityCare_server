@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
+import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
-import { AuthProvider, Role, UserStatus } from "../../../generated/prisma/enums";
+import {
+	AuthProvider,
+	Role,
+	UserStatus,
+} from "../../../generated/prisma/enums";
 import config from "../../config";
+import { googleClient } from "../../lib/googleAuth";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import type {
@@ -10,11 +16,9 @@ import type {
 	IRegisterPatientPayload,
 	IRequestUser,
 } from "./auth.interface";
-import { OAuth2Client, type TokenPayload } from "google-auth-library";
-import { googleClient } from "../../lib/googleAuth";
 
 const registerCitizen = async (payload: IRegisterPatientPayload) => {
-	const { name, password } = payload;
+	const { name, password, citizen: citizenData } = payload;
 	const email = payload.email.trim().toLowerCase();
 
 	const isUserExists = await prisma.user.findUnique({
@@ -36,7 +40,14 @@ const registerCitizen = async (payload: IRegisterPatientPayload) => {
 			status: UserStatus.ACTIVE,
 			emailVerified: false,
 			citizen: {
-				create: {},
+				create: {
+					contactNumber: citizenData?.contactNumber,
+					address: citizenData?.address,
+					gender: citizenData?.gender,
+					age: citizenData?.age,
+					region: citizenData?.region,
+					permanentAddress: citizenData?.permanentAddress,
+				},
 			},
 		},
 		omit: { password: true },
@@ -91,7 +102,10 @@ const loginUser = async (payload: ILoginUserPayload) => {
 		throw new Error("User is deleted");
 	}
 
-	const isPasswordMatched = await bcrypt.compare(password, user.password as string);
+	const isPasswordMatched = await bcrypt.compare(
+		password,
+		user.password as string,
+	);
 
 	if (!isPasswordMatched) {
 		throw new Error("Invalid credentials");
@@ -141,8 +155,6 @@ const getMe = async (user: IRequestUser) => {
 
 	return isUserExists;
 };
-
-
 
 const refreshToken = async (token: string) => {
 	const verifiedRefreshToken = jwtUtils.verifyToken(

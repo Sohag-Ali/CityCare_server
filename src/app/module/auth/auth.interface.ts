@@ -1,4 +1,13 @@
-import type { Role } from "../../../generated/prisma/browser";
+import type { Gender, Role } from "../../../generated/prisma/enums";
+
+export interface ICitizenRegisterPayload {
+	contactNumber?: string;
+	address?: string;
+	gender?: Gender;
+	age?: number;
+	region?: string;
+	permanentAddress?: string;
+}
 
 export interface ILoginUserPayload {
 	email: string;
@@ -9,6 +18,7 @@ export interface IRegisterPatientPayload {
 	name: string;
 	email: string;
 	password: string;
+	citizen?: ICitizenRegisterPayload;
 }
 
 export interface IRequestUser {
@@ -21,5 +31,3 @@ export interface IRequestUser {
 export interface IGoogleLoginPayload {
 	idToken: string;
 }
-	
-

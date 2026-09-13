@@ -3,6 +3,10 @@ model Citizen {
   contactNumber String?
   address       String?
   gender        Gender?
+  age           Int?
+  region        String?
+  permanentAddress String?
+  
   profileImage  String?
 
   isDeleted Boolean   @default(false)

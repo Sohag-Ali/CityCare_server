@@ -2,16 +2,31 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
 import { AuthController } from "./auth.controller";
+import { validateRequest } from "../../middleware/validationRequest";
+import { AuthValidation } from "./auth.validation";
 
 const router = Router();
 
-router.post("/register", AuthController.registerCitizen);
-router.post("/login", AuthController.loginUser);
+router.post(
+	"/register",
+	validateRequest(AuthValidation.citizenRegisterSchema),
+	AuthController.registerCitizen,
+);
+router.post(
+	"/login",
+	validateRequest(AuthValidation.loginSchema),
+	AuthController.loginUser,
+);
 router.get(
 	"/me",
-	auth(Role.ADMIN, Role.CITIZEN,Role.STAFF),
+	auth(Role.ADMIN, Role.CITIZEN, Role.STAFF, Role.SUPER_ADMIN),
 	AuthController.getMe,
 );
-router.post("/google-login", AuthController.googleLogin);
-router.post("/refresh-token", AuthController.refreshToken);
+router.post("/google-login",
+	validateRequest(AuthValidation.googleLoginSchema), 
+	AuthController.googleLogin);
+	
+router.post("/refresh-token", 
+	AuthController.refreshToken);
+
 export const AuthRoutes = router;

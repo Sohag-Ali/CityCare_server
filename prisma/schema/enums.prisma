@@ -2,10 +2,12 @@ enum Role {
   CITIZEN
   STAFF
   ADMIN
+  SUPER_ADMIN
 }
 
 enum UserStatus {
   ACTIVE
+  INACTIVE
   BLOCKED
   DELETED
 }

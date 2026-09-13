@@ -4,10 +4,19 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
+import { AuthValidation } from "./auth.validation";
 
 const registerCitizen = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.registerCitizen(payload);
+	const payload = AuthValidation.citizenRegisterSchema.safeParse(req.body);
+
+	if (!payload.success) {
+		let errorMessage = "";
+		payload.error.issues.forEach(issue => {
+			errorMessage += issue.message;
+		});
+		throw new Error(errorMessage.slice(0, -2));
+	}
+	const result = await AuthService.registerCitizen(payload.data);
 
 	const { accessToken, refreshToken, user, citizen } = result;
 
@@ -38,8 +47,16 @@ const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 });
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.loginUser(payload);
+	const payload = AuthValidation.loginSchema.safeParse(req.body);
+
+	if (!payload.success) {
+		let errorMessage = "";
+		payload.error.issues.forEach(issue => {
+			errorMessage += issue.message;
+		});
+		throw new Error(errorMessage.slice(0, -2));
+	}
+	const result = await AuthService.loginUser(payload.data);
 	const { accessToken, refreshToken } = result;
 
 	res.cookie("accessToken", accessToken, {
@@ -114,9 +131,17 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+	const payload = AuthValidation.googleLoginSchema.safeParse(req.body);
 
-	const result = await AuthService.googleLogin(payload);
+	if (!payload.success) {
+		let errorMessage = "";
+		payload.error.issues.forEach(issue => {
+			errorMessage += issue.message;
+		});
+		throw new Error(errorMessage.slice(0, -2));
+	}
+
+	const result = await AuthService.googleLogin(payload.data);
 
 	const { accessToken, refreshToken } = result;
 
@@ -144,11 +169,10 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-
 export const AuthController = {
 	registerCitizen,
 	loginUser,
 	getMe,
 	refreshToken,
-	googleLogin
+	googleLogin,
 };
