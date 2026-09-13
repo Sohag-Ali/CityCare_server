@@ -5,11 +5,11 @@ import { sendResponse } from '../../utils/sendResponse'
 import { IRequestUser } from './auth.interface'
 import { AuthService } from './auth.service'
 
-const registerPatient = catchAsync(async (req: Request, res: Response) => {
+const registerCitizen = catchAsync(async (req: Request, res: Response) => {
     const payload = req.body
-    const result = await AuthService.registerPatient(payload)
+    const result = await AuthService.registerCitizen(payload)
 
-    const { accessToken, refreshToken, user, patient } = result
+    const { accessToken, refreshToken, user, citizen } = result
 
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
@@ -27,12 +27,12 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         success: true,
-        message: 'Patient registered successfully',
+        message: 'Citizen registered successfully',
         data: {
             accessToken,
             refreshToken,
             user,
-            patient,
+            citizen,
         },
     })
 })
@@ -115,7 +115,7 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
 
 export const AuthController = {
-    registerPatient,
+    registerCitizen,
     loginUser,
     getMe,
     refreshToken,

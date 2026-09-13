@@ -4,14 +4,14 @@ model User {
   email              String
   password           String
   emailVerified      Boolean    @default(false)
-  role               Role       @default(PATIENT)
+  role               Role       @default(CITIZEN)
   status             UserStatus @default(ACTIVE)
   needPasswordChange Boolean    @default(false)
   isDeleted          Boolean    @default(false)
   deletedAt          DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-  patient            Patient?
+  citizen            Citizen?
 
   @@unique([email])
   @@map("users")

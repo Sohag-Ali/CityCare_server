@@ -11,7 +11,7 @@ import {
 } from './auth.interface'
 
 
-const registerPatient = async (payload: IRegisterPatientPayload) => {
+const registerCitizen = async (payload: IRegisterPatientPayload) => {
     const { name, password } = payload
     const email = payload.email.trim().toLowerCase()
 
@@ -30,18 +30,18 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
             name,
             email,
             password: hashedPassword,
-            role: Role.PATIENT,
+            role: Role.CITIZEN,
             status: UserStatus.ACTIVE,
             emailVerified: false,
-            patient: {
+            citizen: {
                 create: { name, email },
             },
         },
         omit: { password: true },
-        include: { patient: true },
+        include: { citizen: true },
     })
 
-    const { patient, ...user } = createdUser
+    const { citizen, ...user } = createdUser
     const jwtPayload = {
         userId: user.id,
         name: user.name,
@@ -63,7 +63,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
 
     return {
         user,
-        patient,
+        citizen,
         accessToken,
         refreshToken
     }
@@ -126,7 +126,7 @@ const getMe = async (user: IRequestUser) => {
             id: user.userId,
         },
         include: {
-            patient: true,
+            citizen: true,
         },
         omit: {
             password: true,
@@ -185,7 +185,7 @@ const refreshToken = async (token: string) => {
 
 
 export const AuthService = {
-    registerPatient,
+    registerCitizen,
     loginUser,
     getMe,
     refreshToken
