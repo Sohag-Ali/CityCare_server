@@ -1,0 +1,1 @@
+-- Stub migration to sync remote migration history

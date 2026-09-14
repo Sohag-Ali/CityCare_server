@@ -1,0 +1,21 @@
+model Municipality {
+  id           String    @id @default(uuid())
+  name         String
+  code         String    @unique
+  country      String
+  timezone     String
+  currency     String
+  contactEmail String?
+  contactPhone String?
+  logoUrl      String?
+  isActive     Boolean   @default(true)
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([code], name: "idx_municipality_code")
+  @@index([isActive], name: "idx_municipality_isActive")
+  @@index([isDeleted], name: "idx_municipality_isDeleted")
+  @@map("municipalities")
+}
