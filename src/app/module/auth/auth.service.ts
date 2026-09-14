@@ -14,9 +14,10 @@ import type {
 	IForgotPasswordPayload,
 	IGoogleLoginPayload,
 	ILoginUserPayload,
-	IRegisterPatientPayload,
+	IRegisterCitizenPayload,
 	IRequestUser,
 	IResetPasswordPayload,
+	IVerifyEmailPayload,
 } from "./auth.interface";
 import { redisClient } from "../../lib/redis";
 import crypto from "crypto";
@@ -24,7 +25,7 @@ import path from "path";
 import { transporter } from "../../lib/nodemailer";
 import ejs from "ejs";
 
-const registerCitizen = async (payload: IRegisterPatientPayload) => {
+const registerCitizen = async (payload: IRegisterCitizenPayload) => {
 	const { name, password, citizen: citizenData } = payload;
 	const email = payload.email.trim().toLowerCase();
 
@@ -38,30 +39,151 @@ const registerCitizen = async (payload: IRegisterPatientPayload) => {
 
 	const hashedPassword = await bcrypt.hash(password, 8);
 
+	const expirationSeconds = 5 * 60
+
+	const otpKey = `citizen-registration-otp:${email}`
+	const otpValue = crypto.randomInt(100000, 1000000).toString();
+
+	await redisClient.set(otpKey, otpValue, {
+		expiration: {
+			type: "EX",
+			value: expirationSeconds
+		}
+	})
+
+	const citizenRegistrationKey = `citizen-registration-data:${email}`
+	const redisUserDataPayload = {
+		name,
+		email,
+		password: hashedPassword,
+		citizen: citizenData
+	}
+
+	await redisClient.set(
+		citizenRegistrationKey, 
+		JSON.stringify(redisUserDataPayload), 
+		{
+			expiration: {
+				type: "EX",
+				value: expirationSeconds
+			}
+		}
+	)
+
+
+	const tempatePath = path.join(process.cwd(), "src/app/templates/registration-user-otp.ejs")
+
+	const templateData = {
+		name,
+		email,
+		otp : otpValue,
+		expirationMinutes: expirationSeconds / 60
+
+	}
+
+	const html = await ejs.renderFile(tempatePath, templateData)
+
+	await transporter.sendMail({
+		from: config.email_sender,
+		to: email,
+		subject: "Email Verification",
+		// text : `Your OTP is ${otp}`
+		// html: `<h1>Your OTP is ${otp}</h1>`
+		html
+	})
+	
+};
+
+const verifyCitizenEmail = async (payload : IVerifyEmailPayload) => {
+
+	const otp = payload.otp;
+	const email = payload.email.trim().toLowerCase();
+
+	const isUserExist = await prisma.user.findUnique({
+		where: { email },
+	});
+
+	if (isUserExist?.status === "BLOCKED") {
+		throw new Error("User is Blocked")
+	}
+
+	if (isUserExist?.emailVerified) {
+		throw new Error("Email ALready Verified")
+	}
+
+	if (isUserExist?.isDeleted || isUserExist?.status === "DELETED") {
+		throw new Error("User is Deleted")
+	}
+
+	const otpKey = `citizen-registration-otp:${email}`
+
+	const redisOtp = await redisClient.get(otpKey)
+
+	if (!redisOtp) {
+		throw new Error("Invalid OTP")
+	}
+
+	if (redisOtp !== otp) {
+		throw new Error("OTP Does Not Match")
+	}
+
+	await redisClient.del(otpKey)
+
+	const citizenRegistrationKey = `citizen-registration-data:${email}`
+
+	const redisCitizenData = await redisClient.get(citizenRegistrationKey)
+
+	if(!redisCitizenData){
+		throw new Error ("Citizen Doesnt Exist");
+	}
+
+	const citizenPayload : IRegisterCitizenPayload = JSON.parse(redisCitizenData)
+
 	const createdUser = await prisma.user.create({
 		data: {
-			name,
-			email,
-			password: hashedPassword,
+			name: citizenPayload.name,
+			email: citizenPayload.email,
+			password: citizenPayload.password,
 			role: Role.CITIZEN,
 			status: UserStatus.ACTIVE,
-			emailVerified: false,
+			emailVerified: true,
 			citizen: {
 				create: {
-					contactNumber: citizenData?.contactNumber,
-					address: citizenData?.address,
-					gender: citizenData?.gender,
-					age: citizenData?.age,
-					region: citizenData?.region,
-					permanentAddress: citizenData?.permanentAddress,
+					contactNumber: citizenPayload?.citizen?.contactNumber,
+					address: citizenPayload?.citizen?.address,
+					gender: citizenPayload?.citizen?.gender,
+					age: citizenPayload?.citizen?.age,
+					region: citizenPayload?.citizen?.region,
+					permanentAddress: citizenPayload?.citizen?.permanentAddress,
 				},
 			},
 		},
-		omit: { password: true },
 		include: { citizen: true },
 	});
 
-	const { citizen, ...user } = createdUser;
+	await redisClient.del(citizenRegistrationKey);
+
+	const tempatePath = path.join(
+		process.cwd(),
+		"src/app/templates/citizen-welcome-email.ejs",
+	);
+
+	const templateData = {
+		name: createdUser.name,
+	};
+
+	const html = await ejs.renderFile(tempatePath, templateData);
+
+	await transporter.sendMail({
+		from: config.email_sender,
+		to: email,
+		subject: "Welcome To PH Healthcare System",
+		// text : `Your OTP is ${otp}`
+		// html: `<h1>Your OTP is ${otp}</h1>`
+		html,
+	});
+
+	const { password, citizen, ...user } = createdUser;
 	const jwtPayload = {
 		userId: user.id,
 		name: user.name,
@@ -87,7 +209,10 @@ const registerCitizen = async (payload: IRegisterPatientPayload) => {
 		accessToken,
 		refreshToken,
 	};
-};
+
+}
+
+
 
 const loginUser = async (payload: ILoginUserPayload) => {
 	const { password } = payload;
@@ -487,4 +612,5 @@ export const AuthService = {
 	googleLogin,
 	forgotPassword,
 	resetPassword,
+	verifyCitizenEmail,
 };

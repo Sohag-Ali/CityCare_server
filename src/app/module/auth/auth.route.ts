@@ -12,6 +12,13 @@ router.post(
 	validateRequest(AuthValidation.citizenRegisterSchema),
 	AuthController.registerCitizen,
 );
+
+router.post(
+	"/verify-email",
+	validateRequest(AuthValidation.CitizenEmailVerifyZodSchema),
+	AuthController.verifyCitizenEmail
+);
+
 router.post(
 	"/login",
 	validateRequest(AuthValidation.loginSchema),
