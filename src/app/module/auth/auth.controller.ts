@@ -169,10 +169,47 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+
+	await AuthService.forgotPassword(payload);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: `OTP Sent To Email : ${payload.email}`,
+		data: {
+			email: payload.email,
+		},
+	});
+});
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+	const payload = AuthValidation.ResetPasswordZodSchema.safeParse(req.body);
+
+	if (!payload.success) {
+		let errorMessage = "";
+		payload.error.issues.forEach((issue) => {
+			errorMessage += issue.message;
+		});
+		throw new Error(errorMessage.slice(0, -2));
+	}
+
+	await AuthService.resetPassword(payload.data);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Password Changed Successfully",
+		data: null,
+	});
+});
+
 export const AuthController = {
 	registerCitizen,
 	loginUser,
 	getMe,
 	refreshToken,
 	googleLogin,
+	forgotPassword,
+	resetPassword,
 };

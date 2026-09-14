@@ -20,13 +20,16 @@ export default {
 	super_admin_email: process.env.SUPER_ADMIN_EMAIL?.trim(),
 	super_admin_password: process.env.SUPER_ADMIN_PASSWORD?.trim(),
 
-	tester_admin_name: (
-		process.env.TESTER_ADMIN_NAME || process.env.ADMIN_NAME
-	)?.trim(),
-	tester_admin_email: (
-		process.env.TESTER_ADMIN_EMAIL || process.env.ADMIN_EMAIL
-	)?.trim(),
-	tester_admin_password: (
-		process.env.TESTER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD
-	)?.trim(),
+	tester_admin_name: process.env.ADMIN_NAME?.trim(),
+	tester_admin_email: process.env.ADMIN_EMAIL?.trim(),
+	tester_admin_password: process.env.ADMIN_PASSWORD?.trim(),
+
+	redis_user: process.env.REDIS_USERNAME!,
+	redis_host: process.env.REDIS_HOST!,
+	redis_password: process.env.REDIS_PASSWORD!,
+	redis_port: process.env.REDIS_PORT!,
+
+	smtp_user: process.env.SMTP_USER!,
+	smtp_password: process.env.SMTP_PASSWORD!,
+	email_sender: process.env.EMAIL_SENDER!,
 };
