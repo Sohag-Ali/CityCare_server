@@ -20,9 +20,13 @@ export default {
 	super_admin_email: process.env.SUPER_ADMIN_EMAIL?.trim(),
 	super_admin_password: process.env.SUPER_ADMIN_PASSWORD?.trim(),
 
-	tester_admin_name: (process.env.TESTER_ADMIN_NAME || process.env.ADMIN_NAME)?.trim(),
-	tester_admin_email: (process.env.TESTER_ADMIN_EMAIL || process.env.ADMIN_EMAIL)?.trim(),
-	tester_admin_password: (process.env.TESTER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD)?.trim(),
-
-	
+	tester_admin_name: (
+		process.env.TESTER_ADMIN_NAME || process.env.ADMIN_NAME
+	)?.trim(),
+	tester_admin_email: (
+		process.env.TESTER_ADMIN_EMAIL || process.env.ADMIN_EMAIL
+	)?.trim(),
+	tester_admin_password: (
+		process.env.TESTER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD
+	)?.trim(),
 };

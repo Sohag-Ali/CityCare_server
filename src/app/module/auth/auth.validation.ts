@@ -12,7 +12,10 @@ const citizenRegisterSchema = z.object({
 		.regex(/[A-Z]/, "Password must contain at least one uppercase letter")
 		.regex(/[a-z]/, "Password must contain at least one lowercase letter")
 		.regex(/[0-9]/, "Password must contain at least one number")
-		.regex(/[!@#$%^&*]/, "Password must contain at least one special character"),
+		.regex(
+			/[!@#$%^&*]/,
+			"Password must contain at least one special character",
+		),
 	citizen: z
 		.object({
 			contactNumber: z.string().optional(),
@@ -27,9 +30,7 @@ const citizenRegisterSchema = z.object({
 
 const loginSchema = z.object({
 	email: z.email("Email is not in correct format"),
-	password: z
-		.string()
-		.min(6, "Password must be at least 6 characters long"),
+	password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
 const googleLoginSchema = z.object({
@@ -38,6 +39,6 @@ const googleLoginSchema = z.object({
 
 export const AuthValidation = {
 	citizenRegisterSchema,
-    loginSchema,
-    googleLoginSchema
+	loginSchema,
+	googleLoginSchema,
 };

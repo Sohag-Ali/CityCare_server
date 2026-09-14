@@ -22,11 +22,12 @@ router.get(
 	auth(Role.ADMIN, Role.CITIZEN, Role.STAFF, Role.SUPER_ADMIN),
 	AuthController.getMe,
 );
-router.post("/google-login",
-	validateRequest(AuthValidation.googleLoginSchema), 
-	AuthController.googleLogin);
-	
-router.post("/refresh-token", 
-	AuthController.refreshToken);
+router.post(
+	"/google-login",
+	validateRequest(AuthValidation.googleLoginSchema),
+	AuthController.googleLogin,
+);
+
+router.post("/refresh-token", AuthController.refreshToken);
 
 export const AuthRoutes = router;

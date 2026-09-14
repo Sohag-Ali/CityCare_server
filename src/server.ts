@@ -13,7 +13,7 @@ const main = async () => {
 		// seed super admin
 		await seedSuperAdmin();
 		await seedTesterAdmin();
-		
+
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});

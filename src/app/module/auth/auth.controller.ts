@@ -11,7 +11,7 @@ const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 
 	if (!payload.success) {
 		let errorMessage = "";
-		payload.error.issues.forEach(issue => {
+		payload.error.issues.forEach((issue) => {
 			errorMessage += issue.message;
 		});
 		throw new Error(errorMessage.slice(0, -2));
@@ -51,7 +51,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
 	if (!payload.success) {
 		let errorMessage = "";
-		payload.error.issues.forEach(issue => {
+		payload.error.issues.forEach((issue) => {
 			errorMessage += issue.message;
 		});
 		throw new Error(errorMessage.slice(0, -2));
@@ -135,7 +135,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
 	if (!payload.success) {
 		let errorMessage = "";
-		payload.error.issues.forEach(issue => {
+		payload.error.issues.forEach((issue) => {
 			errorMessage += issue.message;
 		});
 		throw new Error(errorMessage.slice(0, -2));

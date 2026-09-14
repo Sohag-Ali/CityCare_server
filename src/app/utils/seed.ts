@@ -10,9 +10,7 @@ export const seedSuperAdmin = async () => {
 		const password = config.super_admin_password;
 
 		if (!name || !email || !password) {
-			console.log(
-				"Super Admin Name, Email, or Password Missing In Env File!",
-			);
+			console.log("Super Admin Name, Email, or Password Missing In Env File!");
 			return;
 		}
 
@@ -49,7 +47,7 @@ export const seedSuperAdmin = async () => {
 	}
 };
 
-//create tester admin 
+//create tester admin
 
 export const seedTesterAdmin = async () => {
 	try {
@@ -58,9 +56,7 @@ export const seedTesterAdmin = async () => {
 		const password = config.tester_admin_password;
 
 		if (!name || !email || !password) {
-			console.log(
-				"Tester Admin Name, Email, or Password Missing In Env File!",
-			);
+			console.log("Tester Admin Name, Email, or Password Missing In Env File!");
 			return;
 		}
 
@@ -96,5 +92,3 @@ export const seedTesterAdmin = async () => {
 		console.log("Error Seeding Tester Admin: ", error);
 	}
 };
-
-
