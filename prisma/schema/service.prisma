@@ -14,7 +14,9 @@ model MunicipalService {
   updatedAt   DateTime  @updatedAt
 
   // Relations
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  category        Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  serviceRequests ServiceRequest[]
+
 
   @@unique([categoryId, code], name: "unique_category_service_code")
   @@index([categoryId], name: "idx_service_categoryId")

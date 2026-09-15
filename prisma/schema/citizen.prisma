@@ -15,8 +15,10 @@ model Citizen {
   updatedAt DateTime  @updatedAt
 
   // Relations
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  serviceRequests ServiceRequest[]
+
 
   @@index([isDeleted], name: "idx_citizen_isDeleted")
   @@map("citizens")

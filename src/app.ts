@@ -14,6 +14,7 @@ import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
 import { MunicipalityRoutes } from "./app/module/municipality/municipality.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
+import { ServiceRequestRoutes } from "./app/module/serviceRequest/serviceRequest.route";
 import { StaffRoutes } from "./app/module/staff/staff.route";
 import { UserRoutes } from "./app/module/user/user.route";
 import { WardRoutes } from "./app/module/ward/ward.route";
@@ -44,6 +45,8 @@ app.use("/api/v1/departments", DepartmentRoutes);
 app.use("/api/v1/staff", StaffRoutes);
 app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
+app.use("/api/v1/service-requests", ServiceRequestRoutes);
+
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
