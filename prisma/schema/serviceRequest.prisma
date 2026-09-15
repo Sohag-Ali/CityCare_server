@@ -22,6 +22,7 @@ model ServiceRequest {
   location      RequestLocation?
   attachments   RequestAttachment[]
   statusHistory RequestStatusHistory[]
+  assignments   Assignment[]
 
   @@index([citizenId], name: "idx_request_citizenId")
   @@index([serviceId], name: "idx_request_serviceId")

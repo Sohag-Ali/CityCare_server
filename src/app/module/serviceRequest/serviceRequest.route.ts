@@ -10,6 +10,8 @@ import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
 import { ServiceRequestController } from "./serviceRequest.controller";
 import { ServiceRequestValidation } from "./serviceRequest.validation";
+import { AssignmentController } from "../assignment/assignment.controller";
+import { AssignmentValidation } from "../assignment/assignment.validation";
 
 const router = Router();
 
@@ -47,6 +49,13 @@ router.get(
 	"/",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	ServiceRequestController.getAllServiceRequests,
+);
+
+router.post(
+	"/:id/assign",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
+	validateRequest(AssignmentValidation.assignTechnicianZodSchema),
+	AssignmentController.assignTechnician,
 );
 
 router.get(

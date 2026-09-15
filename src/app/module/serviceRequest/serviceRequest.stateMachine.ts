@@ -19,7 +19,11 @@ export const ALLOWED_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
 		RequestStatus.ESCALATED,
 	],
 	[RequestStatus.APPROVED]: [RequestStatus.ASSIGNED, RequestStatus.ESCALATED],
-	[RequestStatus.ASSIGNED]: [RequestStatus.ACCEPTED, RequestStatus.ESCALATED],
+	[RequestStatus.ASSIGNED]: [
+		RequestStatus.ASSIGNED,
+		RequestStatus.ACCEPTED,
+		RequestStatus.ESCALATED,
+	],
 	[RequestStatus.ACCEPTED]: [
 		RequestStatus.IN_PROGRESS,
 		RequestStatus.ESCALATED,
@@ -93,12 +97,13 @@ export const canRolePerformTransition = (
 		}
 
 		if (staffType === StaffType.OFFICER) {
-			// Officer handles initial review and verification transitions
+			// Officer handles initial review and verification transitions, and assignment
 			return (
 				targetStatus === RequestStatus.UNDER_REVIEW ||
 				targetStatus === RequestStatus.APPROVED ||
 				targetStatus === RequestStatus.REJECTED ||
 				targetStatus === RequestStatus.DUPLICATE ||
+				targetStatus === RequestStatus.ASSIGNED ||
 				targetStatus === RequestStatus.VERIFICATION ||
 				targetStatus === RequestStatus.ESCALATED
 			);

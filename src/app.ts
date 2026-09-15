@@ -19,6 +19,7 @@ import { StaffRoutes } from "./app/module/staff/staff.route";
 import { UserRoutes } from "./app/module/user/user.route";
 import { WardRoutes } from "./app/module/ward/ward.route";
 import { ZoneRoutes } from "./app/module/zone/zone.route";
+import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
 
 const app: Application = express();
 
@@ -46,6 +47,7 @@ app.use("/api/v1/staff", StaffRoutes);
 app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
+app.use("/api/v1/assignments", AssignmentRoutes);
 
 
 // Basic route

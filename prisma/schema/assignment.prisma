@@ -1,0 +1,25 @@
+model Assignment {
+  id               String           @id @default(uuid())
+  serviceRequestId String
+  technicianId     String
+  assignedById     String
+  assignedAt       DateTime         @default(now())
+  acceptedAt       DateTime?
+  releasedAt       DateTime?
+  status           AssignmentStatus @default(ACTIVE)
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  technician     StaffProfile   @relation(fields: [technicianId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  assignedBy     User           @relation(fields: [assignedById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([serviceRequestId], name: "idx_assignment_serviceRequestId")
+  @@index([technicianId], name: "idx_assignment_technicianId")
+  @@index([assignedById], name: "idx_assignment_assignedById")
+  @@index([status], name: "idx_assignment_status")
+  @@index([createdAt], name: "idx_assignment_createdAt")
+  @@map("assignments")
+}

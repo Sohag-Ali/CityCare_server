@@ -17,6 +17,7 @@ model User {
   citizen              Citizen?
   staffProfile         StaffProfile?
   statusHistoryChanges RequestStatusHistory[]
+  assignedAssignments  Assignment[]
 
 
   @@unique([email])

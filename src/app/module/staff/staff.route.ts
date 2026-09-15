@@ -4,6 +4,7 @@ import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
 import { StaffController } from "./staff.controller";
 import { StaffValidation } from "./staff.validation";
+import { AssignmentController } from "../assignment/assignment.controller";
 
 const router = Router();
 
@@ -18,6 +19,12 @@ router.get(
 	"/",
 	auth(Role.ADMIN, Role.SUPER_ADMIN),
 	StaffController.getAllStaff,
+);
+
+router.get(
+	"/technicians",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
+	AssignmentController.getEligibleTechnicians,
 );
 
 router.get(
