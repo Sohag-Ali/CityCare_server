@@ -1,0 +1,25 @@
+model MunicipalService {
+  id          String    @id @default(uuid())
+  categoryId  String
+  name        String
+  code        String
+  description String?
+  isPaid      Boolean   @default(false)
+  baseFee     Decimal?  @db.Decimal(12, 2)
+  currency    String?
+  isActive    Boolean   @default(true)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([categoryId, code], name: "unique_category_service_code")
+  @@index([categoryId], name: "idx_service_categoryId")
+  @@index([isActive], name: "idx_service_isActive")
+  @@index([isPaid], name: "idx_service_isPaid")
+  @@index([isDeleted], name: "idx_service_isDeleted")
+  @@map("municipal_services")
+}

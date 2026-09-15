@@ -1,0 +1,22 @@
+model Category {
+  id           String             @id @default(uuid())
+  departmentId String
+  name         String
+  code         String
+  description  String?
+  isActive     Boolean            @default(true)
+  isDeleted    Boolean            @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  // Relations
+  department   Department         @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  services     MunicipalService[]
+
+  @@unique([departmentId, code], name: "unique_department_category_code")
+  @@index([departmentId], name: "idx_category_departmentId")
+  @@index([isActive], name: "idx_category_isActive")
+  @@index([isDeleted], name: "idx_category_isDeleted")
+  @@map("categories")
+}
