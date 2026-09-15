@@ -1,0 +1,26 @@
+model Ward {
+  id             String       @id @default(uuid())
+  municipalityId String
+  zoneId         String
+  name           String
+  code           String
+  wardNumber     Int
+  description    String?
+  isActive       Boolean      @default(true)
+  isDeleted      Boolean      @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  zone           Zone         @relation(fields: [zoneId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([municipalityId, code], name: "unique_municipality_ward_code")
+  @@unique([municipalityId, wardNumber], name: "unique_municipality_ward_number")
+  @@index([municipalityId], name: "idx_ward_municipalityId")
+  @@index([zoneId], name: "idx_ward_zoneId")
+  @@index([isActive], name: "idx_ward_isActive")
+  @@index([isDeleted], name: "idx_ward_isDeleted")
+  @@map("wards")
+}

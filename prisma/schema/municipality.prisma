@@ -14,6 +14,9 @@ model Municipality {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  zones        Zone[]
+  wards        Ward[]
+
   @@index([code], name: "idx_municipality_code")
   @@index([isActive], name: "idx_municipality_isActive")
   @@index([isDeleted], name: "idx_municipality_isDeleted")

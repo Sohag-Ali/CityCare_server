@@ -16,7 +16,7 @@ router.post(
 router.post(
 	"/verify-email",
 	validateRequest(AuthValidation.CitizenEmailVerifyZodSchema),
-	AuthController.verifyCitizenEmail
+	AuthController.verifyCitizenEmail,
 );
 
 router.post(

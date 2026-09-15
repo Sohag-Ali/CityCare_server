@@ -12,14 +12,14 @@ const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 	// if(!payload.success){
 	// 	console.log(payload.error);
 	// 	console.log(payload.error.issues);
-		
+
 	// 	throw new Error(payload.error.issues[0].message)
 	// }
 
 	// console.log(payload);
 
 	const payload = req.body;
-	
+
 	await AuthService.registerCitizen(payload);
 
 	// const { accessToken, refreshToken, user, patient } = result;
@@ -41,14 +41,13 @@ const registerCitizen = catchAsync(async (req: Request, res: Response) => {
 		statusCode: httpStatus.CREATED,
 		success: true,
 		message: "Verification OTP Sent",
-		data: null
+		data: null,
 	});
 });
 
 const verifyCitizenEmail = catchAsync(async (req: Request, res: Response) => {
-
 	const payload = req.body;
-	
+
 	const result = await AuthService.verifyCitizenEmail(payload);
 
 	const { accessToken, refreshToken, user, citizen } = result;
@@ -74,8 +73,8 @@ const verifyCitizenEmail = catchAsync(async (req: Request, res: Response) => {
 			accessToken,
 			refreshToken,
 			user,
-			citizen
-		}
+			citizen,
+		},
 	});
 });
 
@@ -245,5 +244,5 @@ export const AuthController = {
 	googleLogin,
 	forgotPassword,
 	resetPassword,
-	verifyCitizenEmail
+	verifyCitizenEmail,
 };

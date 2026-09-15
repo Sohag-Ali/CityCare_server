@@ -39,49 +39,50 @@ const registerCitizen = async (payload: IRegisterCitizenPayload) => {
 
 	const hashedPassword = await bcrypt.hash(password, 8);
 
-	const expirationSeconds = 5 * 60
+	const expirationSeconds = 5 * 60;
 
-	const otpKey = `citizen-registration-otp:${email}`
+	const otpKey = `citizen-registration-otp:${email}`;
 	const otpValue = crypto.randomInt(100000, 1000000).toString();
 
 	await redisClient.set(otpKey, otpValue, {
 		expiration: {
 			type: "EX",
-			value: expirationSeconds
-		}
-	})
+			value: expirationSeconds,
+		},
+	});
 
-	const citizenRegistrationKey = `citizen-registration-data:${email}`
+	const citizenRegistrationKey = `citizen-registration-data:${email}`;
 	const redisUserDataPayload = {
 		name,
 		email,
 		password: hashedPassword,
-		citizen: citizenData
-	}
+		citizen: citizenData,
+	};
 
 	await redisClient.set(
-		citizenRegistrationKey, 
-		JSON.stringify(redisUserDataPayload), 
+		citizenRegistrationKey,
+		JSON.stringify(redisUserDataPayload),
 		{
 			expiration: {
 				type: "EX",
-				value: expirationSeconds
-			}
-		}
-	)
+				value: expirationSeconds,
+			},
+		},
+	);
 
-
-	const tempatePath = path.join(process.cwd(), "src/app/templates/registration-user-otp.ejs")
+	const tempatePath = path.join(
+		process.cwd(),
+		"src/app/templates/registration-user-otp.ejs",
+	);
 
 	const templateData = {
 		name,
 		email,
-		otp : otpValue,
-		expirationMinutes: expirationSeconds / 60
+		otp: otpValue,
+		expirationMinutes: expirationSeconds / 60,
+	};
 
-	}
-
-	const html = await ejs.renderFile(tempatePath, templateData)
+	const html = await ejs.renderFile(tempatePath, templateData);
 
 	await transporter.sendMail({
 		from: config.email_sender,
@@ -89,13 +90,11 @@ const registerCitizen = async (payload: IRegisterCitizenPayload) => {
 		subject: "Email Verification",
 		// text : `Your OTP is ${otp}`
 		// html: `<h1>Your OTP is ${otp}</h1>`
-		html
-	})
-	
+		html,
+	});
 };
 
-const verifyCitizenEmail = async (payload : IVerifyEmailPayload) => {
-
+const verifyCitizenEmail = async (payload: IVerifyEmailPayload) => {
 	const otp = payload.otp;
 	const email = payload.email.trim().toLowerCase();
 
@@ -104,40 +103,40 @@ const verifyCitizenEmail = async (payload : IVerifyEmailPayload) => {
 	});
 
 	if (isUserExist?.status === "BLOCKED") {
-		throw new Error("User is Blocked")
+		throw new Error("User is Blocked");
 	}
 
 	if (isUserExist?.emailVerified) {
-		throw new Error("Email ALready Verified")
+		throw new Error("Email ALready Verified");
 	}
 
 	if (isUserExist?.isDeleted || isUserExist?.status === "DELETED") {
-		throw new Error("User is Deleted")
+		throw new Error("User is Deleted");
 	}
 
-	const otpKey = `citizen-registration-otp:${email}`
+	const otpKey = `citizen-registration-otp:${email}`;
 
-	const redisOtp = await redisClient.get(otpKey)
+	const redisOtp = await redisClient.get(otpKey);
 
 	if (!redisOtp) {
-		throw new Error("Invalid OTP")
+		throw new Error("Invalid OTP");
 	}
 
 	if (redisOtp !== otp) {
-		throw new Error("OTP Does Not Match")
+		throw new Error("OTP Does Not Match");
 	}
 
-	await redisClient.del(otpKey)
+	await redisClient.del(otpKey);
 
-	const citizenRegistrationKey = `citizen-registration-data:${email}`
+	const citizenRegistrationKey = `citizen-registration-data:${email}`;
 
-	const redisCitizenData = await redisClient.get(citizenRegistrationKey)
+	const redisCitizenData = await redisClient.get(citizenRegistrationKey);
 
-	if(!redisCitizenData){
-		throw new Error ("Citizen Doesnt Exist");
+	if (!redisCitizenData) {
+		throw new Error("Citizen Doesnt Exist");
 	}
 
-	const citizenPayload : IRegisterCitizenPayload = JSON.parse(redisCitizenData)
+	const citizenPayload: IRegisterCitizenPayload = JSON.parse(redisCitizenData);
 
 	const createdUser = await prisma.user.create({
 		data: {
@@ -209,10 +208,7 @@ const verifyCitizenEmail = async (payload : IVerifyEmailPayload) => {
 		accessToken,
 		refreshToken,
 	};
-
-}
-
-
+};
 
 const loginUser = async (payload: ILoginUserPayload) => {
 	const { password } = payload;
