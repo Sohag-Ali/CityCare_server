@@ -10,6 +10,7 @@ import config from "./app/config";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AuthRoutes } from "./app/module/auth/auth.route";
+import { DepartmentRoutes } from "./app/module/department/department.route";
 import { MunicipalityRoutes } from "./app/module/municipality/municipality.route";
 import { UserRoutes } from "./app/module/user/user.route";
 import { WardRoutes } from "./app/module/ward/ward.route";
@@ -36,6 +37,7 @@ app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/municipalities", MunicipalityRoutes);
 app.use("/api/v1/zones", ZoneRoutes);
 app.use("/api/v1/wards", WardRoutes);
+app.use("/api/v1/departments", DepartmentRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

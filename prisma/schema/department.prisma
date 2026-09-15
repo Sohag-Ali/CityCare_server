@@ -1,0 +1,23 @@
+model Department {
+  id             String       @id @default(uuid())
+  municipalityId String
+  name           String
+  code           String
+  description    String?
+  email          String?
+  phone          String?
+  isActive       Boolean      @default(true)
+  isDeleted      Boolean      @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([municipalityId, code], name: "unique_municipality_department_code")
+  @@index([municipalityId], name: "idx_department_municipalityId")
+  @@index([isActive], name: "idx_department_isActive")
+  @@index([isDeleted], name: "idx_department_isDeleted")
+  @@map("departments")
+}

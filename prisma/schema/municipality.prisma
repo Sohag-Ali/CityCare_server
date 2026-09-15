@@ -16,6 +16,7 @@ model Municipality {
 
   zones        Zone[]
   wards        Ward[]
+  departments  Department[]
 
   @@index([code], name: "idx_municipality_code")
   @@index([isActive], name: "idx_municipality_isActive")
