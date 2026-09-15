@@ -2,7 +2,7 @@ import type {
 	PaymentStatus,
 	RequestStatus,
 	ServicePriority,
-} from "../../../generated/prisma/enums";
+} from "../../../generated/prisma/client";
 
 export interface ILocationInput {
 	wardId: string;
@@ -34,6 +34,11 @@ export interface IUpdateServiceRequestPayload {
 	description?: string;
 	priority?: ServicePriority;
 	location?: Partial<ILocationInput>;
+}
+
+export interface IUpdateServiceRequestStatusPayload {
+	status: RequestStatus;
+	note?: string;
 }
 
 export interface IServiceRequestFilterOptions {

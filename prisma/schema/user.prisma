@@ -14,8 +14,10 @@ model User {
   deletedAt          DateTime?
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-  citizen            Citizen?
-  staffProfile       StaffProfile?
+  citizen              Citizen?
+  staffProfile         StaffProfile?
+  statusHistoryChanges RequestStatusHistory[]
+
 
   @@unique([email])
   @@map("users")

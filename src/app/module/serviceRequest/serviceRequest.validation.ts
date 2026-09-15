@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { ServicePriority } from "../../../generated/prisma/client";
+import {
+	RequestStatus,
+	ServicePriority,
+} from "../../../generated/prisma/client";
 
 const createServiceRequestZodSchema = z.object({
 	serviceId: z
@@ -72,7 +75,19 @@ const updateServiceRequestZodSchema = z.object({
 		.optional(),
 });
 
+const updateServiceRequestStatusZodSchema = z.object({
+	status: z.nativeEnum(RequestStatus, {
+		message: "Invalid or missing status value",
+	}),
+	note: z
+		.string()
+		.trim()
+		.max(500, "Note cannot exceed 500 characters")
+		.optional(),
+});
+
 export const ServiceRequestValidation = {
 	createServiceRequestZodSchema,
 	updateServiceRequestZodSchema,
+	updateServiceRequestStatusZodSchema,
 };

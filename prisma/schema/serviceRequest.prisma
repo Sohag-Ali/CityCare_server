@@ -17,10 +17,11 @@ model ServiceRequest {
   updatedAt      DateTime        @updatedAt
 
   // Relations
-  citizen     Citizen             @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  service     MunicipalService    @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  location    RequestLocation?
-  attachments RequestAttachment[]
+  citizen       Citizen                @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  service       MunicipalService       @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  location      RequestLocation?
+  attachments   RequestAttachment[]
+  statusHistory RequestStatusHistory[]
 
   @@index([citizenId], name: "idx_request_citizenId")
   @@index([serviceId], name: "idx_request_serviceId")
@@ -65,6 +66,25 @@ model RequestAttachment {
 
   @@index([requestId], name: "idx_attachment_requestId")
   @@map("request_attachments")
+}
+
+model RequestStatusHistory {
+  id          String         @id @default(uuid())
+  requestId   String
+  fromStatus  RequestStatus?
+  toStatus    RequestStatus
+  changedById String
+  note        String?
+  createdAt   DateTime       @default(now())
+
+  // Relations
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  changedBy      User           @relation(fields: [changedById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([requestId], name: "idx_history_requestId")
+  @@index([changedById], name: "idx_history_changedById")
+  @@index([createdAt], name: "idx_history_createdAt")
+  @@map("request_status_histories")
 }
 
 model ServiceRequestCounter {

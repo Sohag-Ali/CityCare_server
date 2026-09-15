@@ -6,6 +6,7 @@ import {
 	RequestStatus,
 	Role,
 	ServicePriority,
+	type StaffType,
 } from "../../../generated/prisma/client";
 import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
@@ -16,7 +17,9 @@ import type {
 	IPaginationOptions,
 	IServiceRequestFilterOptions,
 	IUpdateServiceRequestPayload,
+	IUpdateServiceRequestStatusPayload,
 } from "./serviceRequest.interface";
+import { canRolePerformTransition } from "./serviceRequest.stateMachine";
 
 const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
 	return new Promise((resolve, reject) => {
@@ -202,7 +205,7 @@ const createServiceRequest = async (
 
 	const priority = payload.priority || ServicePriority.MEDIUM;
 
-	// 6. Safe Atomic Creation with Tracking Number Generation in Prisma Transaction
+	// 6. Safe Atomic Creation with Tracking Number & Initial Status History Record
 	const newRequest = await prisma.$transaction(async (tx) => {
 		const currentYear = new Date().getFullYear();
 
@@ -247,6 +250,14 @@ const createServiceRequest = async (
 							})),
 						}
 					: undefined,
+				statusHistory: {
+					create: {
+						fromStatus: null,
+						toStatus: RequestStatus.SUBMITTED,
+						changedById: authUserId,
+						note: "Service request submitted by citizen",
+					},
+				},
 			},
 			include: {
 				location: {
@@ -269,6 +280,21 @@ const createServiceRequest = async (
 					},
 				},
 				attachments: true,
+				statusHistory: {
+					orderBy: {
+						createdAt: "asc",
+					},
+					include: {
+						changedBy: {
+							select: {
+								id: true,
+								name: true,
+								email: true,
+								role: true,
+							},
+						},
+					},
+				},
 				service: {
 					select: {
 						id: true,
@@ -478,6 +504,21 @@ const getAllServiceRequests = async (
 				},
 			},
 			attachments: true,
+			statusHistory: {
+				orderBy: {
+					createdAt: "asc",
+				},
+				include: {
+					changedBy: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							role: true,
+						},
+					},
+				},
+			},
 			service: {
 				select: {
 					id: true,
@@ -574,6 +615,21 @@ const getServiceRequestById = async (
 				},
 			},
 			attachments: true,
+			statusHistory: {
+				orderBy: {
+					createdAt: "asc",
+				},
+				include: {
+					changedBy: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							role: true,
+						},
+					},
+				},
+			},
 			service: {
 				select: {
 					id: true,
@@ -762,25 +818,43 @@ const updateServiceRequest = async (
 			attachments: true,
 			service: true,
 			citizen: true,
+			statusHistory: true,
 		},
 	});
 
 	return result;
 };
 
-const cancelServiceRequest = async (id: string, authUserId: string) => {
-	const citizen = await prisma.citizen.findFirst({
-		where: { userId: authUserId, isDeleted: false },
+const updateServiceRequestStatus = async (
+	id: string,
+	authRole: Role,
+	authUserId: string,
+	payload: IUpdateServiceRequestStatusPayload,
+) => {
+	const user = await prisma.user.findUnique({
+		where: { id: authUserId },
 	});
 
-	if (!citizen) {
-		throw new AppError(httpStatus.FORBIDDEN, "Citizen profile not found.");
+	if (!user) {
+		throw new AppError(httpStatus.UNAUTHORIZED, "User not found.");
 	}
 
 	const existingRequest = await prisma.serviceRequest.findFirst({
 		where: {
-			id,
+			OR: [{ id }, { trackingNumber: id }],
 			isDeleted: false,
+		},
+		include: {
+			citizen: true,
+			service: {
+				include: {
+					category: {
+						include: {
+							department: true,
+						},
+					},
+				},
+			},
 		},
 	});
 
@@ -788,41 +862,120 @@ const cancelServiceRequest = async (id: string, authUserId: string) => {
 		throw new AppError(httpStatus.NOT_FOUND, "Service request not found");
 	}
 
-	if (existingRequest.citizenId !== citizen.id) {
-		throw new AppError(
-			httpStatus.FORBIDDEN,
-			"Forbidden. You can only cancel your own service requests.",
-		);
+	// Determine staff profile & staffType if actor is STAFF
+	let staff: { id: string; staffType: StaffType; departmentId: string } | null =
+		null;
+	if (authRole === Role.STAFF) {
+		const staffProfile = await prisma.staffProfile.findFirst({
+			where: { userId: authUserId, isDeleted: false, isActive: true },
+		});
+
+		if (!staffProfile) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"Active staff profile not found.",
+			);
+		}
+
+		if (
+			staffProfile.departmentId !==
+			existingRequest.service.category.department.id
+		) {
+			throw new AppError(
+				httpStatus.FORBIDDEN,
+				"Forbidden. You do not have permission to manage service requests outside your department.",
+			);
+		}
+
+		staff = staffProfile;
 	}
 
-	if (
-		existingRequest.status !== RequestStatus.SUBMITTED &&
-		existingRequest.status !== RequestStatus.UNDER_REVIEW
-	) {
+	const isCitizenOwner = existingRequest.citizen.userId === authUserId;
+
+	// Verify state transition and role/staffType permission policy
+	const allowed = canRolePerformTransition(
+		authRole,
+		staff ? staff.staffType : null,
+		isCitizenOwner,
+		existingRequest.status,
+		payload.status,
+	);
+
+	if (!allowed) {
 		throw new AppError(
 			httpStatus.BAD_REQUEST,
-			`Service request cannot be cancelled because its current status is '${existingRequest.status}'.`,
+			`Invalid status transition from '${existingRequest.status}' to '${payload.status}' for your role.`,
 		);
 	}
 
+	// Determine payment status update if request is cancelled
 	const updatedPaymentStatus =
+		payload.status === RequestStatus.CANCELLED &&
 		existingRequest.paymentStatus === PaymentStatus.PENDING
 			? PaymentStatus.CANCELLED
 			: existingRequest.paymentStatus;
 
-	const result = await prisma.serviceRequest.update({
-		where: { id },
-		data: {
-			status: RequestStatus.CANCELLED,
-			paymentStatus: updatedPaymentStatus,
+	// Perform Atomic Status Update + Status History Record Creation
+	const result = await prisma.$transaction(async (tx) => {
+		const updated = await tx.serviceRequest.update({
+			where: { id: existingRequest.id },
+			data: {
+				status: payload.status,
+				paymentStatus: updatedPaymentStatus,
+			},
+		});
+
+		await tx.requestStatusHistory.create({
+			data: {
+				requestId: existingRequest.id,
+				fromStatus: existingRequest.status,
+				toStatus: payload.status,
+				changedById: authUserId,
+				note: payload.note?.trim() || null,
+			},
+		});
+
+		return updated;
+	});
+
+	return getServiceRequestById(result.id, authRole, authUserId);
+};
+
+const getServiceRequestHistory = async (
+	id: string,
+	authRole: Role,
+	authUserId: string,
+) => {
+	// Re-use getServiceRequestById to enforce RBAC visibility checks
+	const request = await getServiceRequestById(id, authRole, authUserId);
+
+	const history = await prisma.requestStatusHistory.findMany({
+		where: {
+			requestId: request.id,
+		},
+		orderBy: {
+			createdAt: "asc",
 		},
 		include: {
-			location: true,
-			service: true,
+			changedBy: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					role: true,
+				},
+			},
 		},
 	});
 
-	return result;
+	return history;
+};
+
+const cancelServiceRequest = async (id: string, authUserId: string) => {
+	return updateServiceRequestStatus(id, Role.CITIZEN, authUserId, {
+		status: RequestStatus.CANCELLED,
+		note: "Request cancelled by citizen",
+	});
 };
 
 export const ServiceRequestService = {
@@ -831,5 +984,7 @@ export const ServiceRequestService = {
 	getMyServiceRequests,
 	getServiceRequestById,
 	updateServiceRequest,
+	updateServiceRequestStatus,
+	getServiceRequestHistory,
 	cancelServiceRequest,
 };

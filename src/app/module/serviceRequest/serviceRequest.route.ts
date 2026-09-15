@@ -50,9 +50,22 @@ router.get(
 );
 
 router.get(
+	"/:id/history",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	ServiceRequestController.getServiceRequestHistory,
+);
+
+router.get(
 	"/:id",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	ServiceRequestController.getServiceRequestById,
+);
+
+router.patch(
+	"/:id/status",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	validateRequest(ServiceRequestValidation.updateServiceRequestStatusZodSchema),
+	ServiceRequestController.updateServiceRequestStatus,
 );
 
 router.patch(

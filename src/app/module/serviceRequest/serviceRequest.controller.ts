@@ -222,6 +222,49 @@ const updateServiceRequest = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const updateServiceRequestStatus = catchAsync(
+	async (req: Request, res: Response) => {
+		const id = req.params.id as string;
+		const authRole = req.user?.role as Role;
+		const authUserId = req.user?.userId as string;
+
+		const result = await ServiceRequestService.updateServiceRequestStatus(
+			id,
+			authRole,
+			authUserId,
+			req.body,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Service request status updated successfully",
+			data: result,
+		});
+	},
+);
+
+const getServiceRequestHistory = catchAsync(
+	async (req: Request, res: Response) => {
+		const id = req.params.id as string;
+		const authRole = req.user?.role as Role;
+		const authUserId = req.user?.userId as string;
+
+		const result = await ServiceRequestService.getServiceRequestHistory(
+			id,
+			authRole,
+			authUserId,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Service request status history fetched successfully",
+			data: result,
+		});
+	},
+);
+
 const cancelServiceRequest = catchAsync(async (req: Request, res: Response) => {
 	const id = req.params.id as string;
 	const authUserId = req.user?.userId as string;
@@ -245,5 +288,7 @@ export const ServiceRequestController = {
 	getMyServiceRequests,
 	getServiceRequestById,
 	updateServiceRequest,
+	updateServiceRequestStatus,
+	getServiceRequestHistory,
 	cancelServiceRequest,
 };
