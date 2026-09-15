@@ -23,4 +23,8 @@ enum AuthProvider {
   GOOGLE
 }
 
-
+enum StaffType {
+  OFFICER
+  TECHNICIAN
+  MANAGER
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Staff Account Activation - CityCare</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h1 { color: #1e3a8a; margin: 0; font-size: 24px; }
+        .info-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .otp-box { font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #2563eb; text-align: center; margin: 25px 0; padding: 15px; background: #eff6ff; border-radius: 6px; }
+        .footer { text-align: center; font-size: 12px; color: #6b7280; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CityCare Municipal Platform</h1>
+        </div>
+        <p>Hello <strong><%= name %></strong>,</p>
+        <p>Your CityCare staff account has been created by the Municipal Administrator. Below are your official employment details:</p>
+        
+        <div class="info-box">
+            <p style="margin: 5px 0;"><strong>Employee ID:</strong> <%= employeeId %></p>
+            <p style="margin: 5px 0;"><strong>Department:</strong> <%= departmentName %></p>
+            <p style="margin: 5px 0;"><strong>Designation:</strong> <%= designation %></p>
+            <p style="margin: 5px 0;"><strong>Staff Type:</strong> <%= staffType %></p>
+        </div>
+
+        <p>Please use the one-time activation OTP below to activate your account and create your password:</p>
+        
+        <div class="otp-box"><%= otp %></div>
+        
+        <p style="text-align: center; color: #ef4444; font-size: 14px;">This OTP is valid for <strong><%= expirationMinutes %> minutes</strong>. Do not share this OTP with anyone.</p>
+
+        <div class="footer">
+            <p>CityCare Municipal Service Platform &copy; 2026. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

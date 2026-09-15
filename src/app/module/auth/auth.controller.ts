@@ -236,6 +236,17 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const activateStaff = catchAsync(async (req: Request, res: Response) => {
+	const result = await AuthService.activateStaff(req.body);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Staff account activated successfully",
+		data: result,
+	});
+});
+
 export const AuthController = {
 	registerCitizen,
 	loginUser,
@@ -245,4 +256,5 @@ export const AuthController = {
 	forgotPassword,
 	resetPassword,
 	verifyCitizenEmail,
+	activateStaff,
 };

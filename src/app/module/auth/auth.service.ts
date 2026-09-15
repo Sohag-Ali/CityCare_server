@@ -11,6 +11,7 @@ import { googleClient } from "../../lib/googleAuth";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import type {
+	IActivateStaffPayload,
 	IForgotPasswordPayload,
 	IGoogleLoginPayload,
 	ILoginUserPayload,
@@ -467,23 +468,23 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 	});
 
 	if (!isUserExist) {
-		throw new Error("Citizen Does Not Exist!");
+		throw new Error("User Does Not Exist!");
 	}
 
 	if (isUserExist.status === "BLOCKED") {
-		throw new Error("Citizen is Blocked");
+		throw new Error("User is Blocked");
 	}
 
 	if (!isUserExist.emailVerified) {
-		throw new Error("Citizen Not Verified");
+		throw new Error("User Not Verified");
 	}
 
 	if (isUserExist.isDeleted || isUserExist.status === "DELETED") {
-		throw new Error("Citizen is Deleted");
+		throw new Error("User is Deleted");
 	}
 
 	if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
-		throw new Error("Citizen Has Account With Google");
+		throw new Error("User Has Account With Google");
 	}
 
 	const otp = crypto.randomInt(100000, 1000000).toString();
@@ -520,6 +521,65 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 		// html: `<h1>Your OTP is ${otp}</h1>`
 		html,
 	});
+};
+
+const activateStaff = async (payload: IActivateStaffPayload) => {
+	const email = payload.email.trim().toLowerCase();
+
+	const user = await prisma.user.findUnique({
+		where: { email },
+		include: { staffProfile: true },
+	});
+
+	if (!user || user.role !== Role.STAFF) {
+		throw new Error("Staff user account not found");
+	}
+
+	if (
+		user.status === UserStatus.BLOCKED ||
+		user.status === UserStatus.DELETED ||
+		user.isDeleted
+	) {
+		throw new Error("Staff account is blocked or deleted");
+	}
+
+	if (user.emailVerified && user.password) {
+		throw new Error(
+			"Staff account is already activated. Please use login or forgot password.",
+		);
+	}
+
+	const otpKey = `staff-activation-otp:${email}`;
+	const redisOtp = await redisClient.get(otpKey);
+
+	if (!redisOtp) {
+		throw new Error("Invalid or expired activation OTP");
+	}
+
+	if (redisOtp !== payload.otp) {
+		throw new Error("Activation OTP does not match");
+	}
+
+	const hashedPassword = await bcrypt.hash(
+		payload.password,
+		Number(config.bcrypt_salt_rounds) || 8,
+	);
+
+	await prisma.user.update({
+		where: { id: user.id },
+		data: {
+			password: hashedPassword,
+			emailVerified: true,
+			status: UserStatus.ACTIVE,
+		},
+	});
+
+	await redisClient.del([otpKey]);
+
+	return {
+		message: "Staff account activated successfully. You can now log in.",
+		email: user.email,
+	};
 };
 
 const resetPassword = async (payload: IResetPasswordPayload) => {
@@ -609,4 +669,5 @@ export const AuthService = {
 	forgotPassword,
 	resetPassword,
 	verifyCitizenEmail,
+	activateStaff,
 };

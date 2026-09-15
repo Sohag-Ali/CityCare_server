@@ -15,6 +15,7 @@ model User {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   citizen            Citizen?
+  staffProfile       StaffProfile?
 
   @@unique([email])
   @@map("users")

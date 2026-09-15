@@ -45,3 +45,9 @@ export interface IResetPasswordPayload {
 	newPassword: string;
 	otp: string;
 }
+
+export interface IActivateStaffPayload {
+	email: string;
+	otp: string;
+	password: string;
+}

@@ -48,4 +48,10 @@ router.post(
 	AuthController.resetPassword,
 );
 
+router.post(
+	"/staff/activate",
+	validateRequest(AuthValidation.StaffActivationZodSchema),
+	AuthController.activateStaff,
+);
+
 export const AuthRoutes = router;

@@ -1,0 +1,27 @@
+model StaffProfile {
+  id            String     @id @default(uuid())
+  userId        String     @unique
+  employeeId    String     @unique
+  departmentId  String
+  staffType     StaffType
+  designation   String
+  joiningDate   DateTime
+  contactNumber String?
+  isActive      Boolean    @default(true)
+  isDeleted     Boolean    @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  department    Department @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId], name: "idx_staff_userId")
+  @@index([employeeId], name: "idx_staff_employeeId")
+  @@index([departmentId], name: "idx_staff_departmentId")
+  @@index([staffType], name: "idx_staff_staffType")
+  @@index([isActive], name: "idx_staff_isActive")
+  @@index([isDeleted], name: "idx_staff_isDeleted")
+  @@map("staff_profiles")
+}
