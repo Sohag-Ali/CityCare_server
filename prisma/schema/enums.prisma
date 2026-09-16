@@ -70,3 +70,11 @@ enum AssignmentStatus {
   REJECTED
 }
 
+enum EvidenceType {
+  BEFORE
+  PROGRESS
+  AFTER
+  OTHER
+}
+
+

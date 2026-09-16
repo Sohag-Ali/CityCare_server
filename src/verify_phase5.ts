@@ -23,7 +23,11 @@ async function runPhase5Verification() {
 	}
 
 	let department = await prisma.department.findFirst({
-		where: { municipalityId: municipality.id, isDeleted: false, isActive: true },
+		where: {
+			municipalityId: municipality.id,
+			isDeleted: false,
+			isActive: true,
+		},
 	});
 
 	if (!department) {
@@ -60,7 +64,9 @@ async function runPhase5Verification() {
 		});
 		console.error("❌ FAILED: Duplicate category code was not rejected!");
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected duplicate category code: "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected duplicate category code: "${err.message}"`,
+		);
 	}
 
 	// 4. Create Free Municipal Service under Category 1
@@ -103,7 +109,9 @@ async function runPhase5Verification() {
 		});
 		console.error("❌ FAILED: Paid service without fee was not rejected!");
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected paid service without fee: "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected paid service without fee: "${err.message}"`,
+		);
 	}
 
 	// 7. Test Category Deactivation Rejection when Active Municipal Services exist (Should fail)
@@ -138,7 +146,9 @@ async function runPhase5Verification() {
 	await ServiceService.deleteService(paidService.id);
 	console.log("✔ Soft-deactivated child Municipal Services");
 
-	const deactivatedCategory = await CategoryService.deleteCategory(category1.id);
+	const deactivatedCategory = await CategoryService.deleteCategory(
+		category1.id,
+	);
 	console.log(
 		`✔ Deactivated Category successfully (isActive=${deactivatedCategory.isActive})`,
 	);

@@ -2,9 +2,9 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
+import { AssignmentController } from "../assignment/assignment.controller";
 import { StaffController } from "./staff.controller";
 import { StaffValidation } from "./staff.validation";
-import { AssignmentController } from "../assignment/assignment.controller";
 
 const router = Router();
 

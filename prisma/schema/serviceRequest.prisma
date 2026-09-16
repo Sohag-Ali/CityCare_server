@@ -17,12 +17,14 @@ model ServiceRequest {
   updatedAt      DateTime        @updatedAt
 
   // Relations
-  citizen       Citizen                @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  service       MunicipalService       @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  location      RequestLocation?
-  attachments   RequestAttachment[]
-  statusHistory RequestStatusHistory[]
-  assignments   Assignment[]
+  citizen           Citizen                @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  service           MunicipalService       @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  location          RequestLocation?
+  attachments       RequestAttachment[]
+  statusHistory     RequestStatusHistory[]
+  assignments       Assignment[]
+  technicianUpdates TechnicianUpdate[]
+  resolutions       Resolution[]
 
   @@index([citizenId], name: "idx_request_citizenId")
   @@index([serviceId], name: "idx_request_serviceId")
@@ -53,19 +55,29 @@ model RequestLocation {
 }
 
 model RequestAttachment {
-  id           String   @id @default(uuid())
-  requestId    String
-  fileUrl      String
-  filePublicId String?
-  fileName     String?
-  fileType     String?
-  fileSize     Int?
-  createdAt    DateTime @default(now())
+  id                 String            @id @default(uuid())
+  requestId          String
+  fileUrl            String
+  filePublicId       String?
+  fileName           String?
+  fileType           String?
+  fileSize           Int?
+  uploadedById       String?
+  evidenceType       EvidenceType?     @default(OTHER)
+  technicianUpdateId String?
+  resolutionId       String?
+  createdAt          DateTime          @default(now())
 
   // Relations
-  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  serviceRequest   ServiceRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  uploadedBy       User?             @relation(fields: [uploadedById], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  technicianUpdate TechnicianUpdate? @relation(fields: [technicianUpdateId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  resolution       Resolution?       @relation(fields: [resolutionId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([requestId], name: "idx_attachment_requestId")
+  @@index([uploadedById], name: "idx_attachment_uploadedById")
+  @@index([technicianUpdateId], name: "idx_attachment_technicianUpdateId")
+  @@index([resolutionId], name: "idx_attachment_resolutionId")
   @@map("request_attachments")
 }
 

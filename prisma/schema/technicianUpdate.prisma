@@ -1,0 +1,19 @@
+model TechnicianUpdate {
+  id                 String              @id @default(uuid())
+  serviceRequestId   String
+  technicianId       String
+  message            String
+  progressPercentage Int?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  // Relations
+  serviceRequest     ServiceRequest      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  technician         StaffProfile        @relation(fields: [technicianId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  attachments        RequestAttachment[]
+
+  @@index([serviceRequestId], name: "idx_techupdate_serviceRequestId")
+  @@index([technicianId], name: "idx_techupdate_technicianId")
+  @@index([createdAt], name: "idx_techupdate_createdAt")
+  @@map("technician_updates")
+}

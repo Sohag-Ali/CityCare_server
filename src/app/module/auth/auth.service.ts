@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import ejs from "ejs";
 import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
+import path from "path";
 import {
 	AuthProvider,
 	Role,
@@ -8,7 +11,9 @@ import {
 } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { googleClient } from "../../lib/googleAuth";
+import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
+import { redisClient } from "../../lib/redis";
 import { jwtUtils } from "../../utils/jwt";
 import type {
 	IActivateStaffPayload,
@@ -20,11 +25,6 @@ import type {
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface";
-import { redisClient } from "../../lib/redis";
-import crypto from "crypto";
-import path from "path";
-import { transporter } from "../../lib/nodemailer";
-import ejs from "ejs";
 
 const registerCitizen = async (payload: IRegisterCitizenPayload) => {
 	const { name, password, citizen: citizenData } = payload;

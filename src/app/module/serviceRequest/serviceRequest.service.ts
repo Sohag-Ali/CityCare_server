@@ -615,6 +615,66 @@ const getServiceRequestById = async (
 				},
 			},
 			attachments: true,
+			assignments: {
+				orderBy: {
+					createdAt: "desc",
+				},
+				include: {
+					technician: {
+						include: {
+							user: {
+								select: {
+									id: true,
+									name: true,
+									email: true,
+								},
+							},
+						},
+					},
+					assignedBy: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+						},
+					},
+				},
+			},
+			technicianUpdates: {
+				orderBy: {
+					createdAt: "asc",
+				},
+				include: {
+					technician: {
+						include: {
+							user: {
+								select: {
+									id: true,
+									name: true,
+									email: true,
+								},
+							},
+						},
+					},
+					attachments: true,
+				},
+			},
+			resolutions: {
+				orderBy: {
+					createdAt: "asc",
+				},
+				include: {
+					submittedBy: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							role: true,
+						},
+					},
+					attachments: true,
+				},
+			},
 			statusHistory: {
 				orderBy: {
 					createdAt: "asc",

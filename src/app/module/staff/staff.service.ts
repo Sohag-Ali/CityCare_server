@@ -1,8 +1,8 @@
-import crypto from "crypto";
-import path from "path";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import ejs from "ejs";
 import httpStatus from "http-status";
+import path from "path";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
 import config from "../../config";
 import { transporter } from "../../lib/nodemailer";

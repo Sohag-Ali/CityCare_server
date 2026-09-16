@@ -1,3 +1,8 @@
+import { prisma } from "./app/lib/prisma";
+import { AssignmentService } from "./app/module/assignment/assignment.service";
+import { CategoryService } from "./app/module/category/category.service";
+import { ServiceService } from "./app/module/service/service.service";
+import { ServiceRequestService } from "./app/module/serviceRequest/serviceRequest.service";
 import {
 	AssignmentStatus,
 	RequestStatus,
@@ -6,11 +11,6 @@ import {
 	StaffType,
 	UserStatus,
 } from "./generated/prisma/client";
-import { prisma } from "./app/lib/prisma";
-import { AssignmentService } from "./app/module/assignment/assignment.service";
-import { CategoryService } from "./app/module/category/category.service";
-import { ServiceService } from "./app/module/service/service.service";
-import { ServiceRequestService } from "./app/module/serviceRequest/serviceRequest.service";
 
 async function runPhase8Verification() {
 	console.log("==========================================");
@@ -76,7 +76,6 @@ async function runPhase8Verification() {
 		categoryId: category.id,
 		name: `P8 Garbage Collection-${ts}`,
 		code: `P8GC-${ts}`,
-		serviceType: "COMPLAINT",
 	});
 
 	// Citizen User
@@ -201,7 +200,9 @@ async function runPhase8Verification() {
 	// ==================================================
 	// TEST 1: Get Eligible Technicians & Department Scoping
 	// ==================================================
-	console.log("\n[TEST 1] Querying eligible technicians for Manager (Sanitation Dept)...");
+	console.log(
+		"\n[TEST 1] Querying eligible technicians for Manager (Sanitation Dept)...",
+	);
 	const eligibleTechs = await AssignmentService.getEligibleTechnicians(
 		managerUser.id,
 		Role.STAFF,
@@ -214,23 +215,30 @@ async function runPhase8Verification() {
 		throw new Error("Sanitation technicians missing from eligible list!");
 	}
 	if (techIds.includes(tech3RoadsStaff.id)) {
-		throw new Error("Roads technician wrongly returned for Sanitation Manager!");
+		throw new Error(
+			"Roads technician wrongly returned for Sanitation Manager!",
+		);
 	}
 	if (techIds.includes(inactiveTechStaff.id)) {
 		throw new Error("Inactive technician wrongly returned in eligible list!");
 	}
-	console.log("✔ Test 1 passed: Department-scoped eligible technician list verified.");
+	console.log(
+		"✔ Test 1 passed: Department-scoped eligible technician list verified.",
+	);
 
 	// ==================================================
 	// TEST 2: Submit Request & Move to APPROVED State
 	// ==================================================
-	console.log("\n[TEST 2] Submitting ServiceRequest and advancing status to APPROVED...");
+	console.log(
+		"\n[TEST 2] Submitting ServiceRequest and advancing status to APPROVED...",
+	);
 	const req1 = await ServiceRequestService.createServiceRequest(
 		citizenUser.id,
 		{
 			serviceId: service.id,
 			title: "Overflowing Garbage Container",
-			description: "Container has not been cleared for 3 days near Market Road.",
+			description:
+				"Container has not been cleared for 3 days near Market Road.",
 			priority: ServicePriority.HIGH,
 			location: {
 				wardId: ward.id,
@@ -278,12 +286,16 @@ async function runPhase8Verification() {
 	if (assignRes1.serviceRequest.status !== RequestStatus.ASSIGNED) {
 		throw new Error("ServiceRequest status should be ASSIGNED!");
 	}
-	console.log("✔ Test 3 passed: Request assigned to Technician 1 successfully.");
+	console.log(
+		"✔ Test 3 passed: Request assigned to Technician 1 successfully.",
+	);
 
 	// ==================================================
 	// TEST 4: Workload Count Check
 	// ==================================================
-	console.log("\n[TEST 4] Checking technician workload count after assignment...");
+	console.log(
+		"\n[TEST 4] Checking technician workload count after assignment...",
+	);
 	const techWorkloadList = await AssignmentService.getEligibleTechnicians(
 		managerUser.id,
 		Role.STAFF,
@@ -314,7 +326,9 @@ async function runPhase8Verification() {
 		throw new Error("Cross-department assignment should have thrown an error!");
 	} catch (err: any) {
 		if (err.message.includes("does not belong to the department")) {
-			console.log(`✔ Cross-department error caught as expected: "${err.message}"`);
+			console.log(
+				`✔ Cross-department error caught as expected: "${err.message}"`,
+			);
 		} else {
 			throw err;
 		}
@@ -337,7 +351,9 @@ async function runPhase8Verification() {
 		throw new Error("Non-technician assignment should have failed!");
 	} catch (err: any) {
 		if (err.message.includes("is not a technician")) {
-			console.log(`✔ Non-technician error caught as expected: "${err.message}"`);
+			console.log(
+				`✔ Non-technician error caught as expected: "${err.message}"`,
+			);
 		} else {
 			throw err;
 		}
@@ -360,7 +376,9 @@ async function runPhase8Verification() {
 		throw new Error("Inactive technician assignment should have failed!");
 	} catch (err: any) {
 		if (err.message.includes("inactive")) {
-			console.log(`✔ Inactive technician error caught as expected: "${err.message}"`);
+			console.log(
+				`✔ Inactive technician error caught as expected: "${err.message}"`,
+			);
 		} else {
 			throw err;
 		}
@@ -369,7 +387,9 @@ async function runPhase8Verification() {
 	// ==================================================
 	// TEST 8: Reject Unauthorized Technician Acceptance
 	// ==================================================
-	console.log("\n[TEST 8] Testing unauthorized technician acceptance rejection...");
+	console.log(
+		"\n[TEST 8] Testing unauthorized technician acceptance rejection...",
+	);
 	try {
 		await AssignmentService.acceptAssignment(
 			assignRes1.assignment.id,
@@ -379,7 +399,9 @@ async function runPhase8Verification() {
 		throw new Error("Unauthorized acceptance should have failed!");
 	} catch (err: any) {
 		if (err.message.includes("Only the assigned technician")) {
-			console.log(`✔ Unauthorized acceptance error caught as expected: "${err.message}"`);
+			console.log(
+				`✔ Unauthorized acceptance error caught as expected: "${err.message}"`,
+			);
 		} else {
 			throw err;
 		}
@@ -401,7 +423,9 @@ async function runPhase8Verification() {
 	if (acceptRes.serviceRequest.status !== RequestStatus.ACCEPTED) {
 		throw new Error("ServiceRequest status should be ACCEPTED!");
 	}
-	console.log("✔ Test 9 passed: Assignment and ServiceRequest transitioned to ACCEPTED.");
+	console.log(
+		"✔ Test 9 passed: Assignment and ServiceRequest transitioned to ACCEPTED.",
+	);
 
 	// ==================================================
 	// TEST 10: Re-assignment Flow & History Preservation
@@ -446,7 +470,10 @@ async function runPhase8Verification() {
 		req2.id,
 		Role.STAFF,
 		managerUser.id,
-		{ technicianId: tech2Staff.id, note: "Tech 1 unavailable, reassigning to Tech 2" },
+		{
+			technicianId: tech2Staff.id,
+			note: "Tech 1 unavailable, reassigning to Tech 2",
+		},
 	);
 
 	// Verify old assignment is RELEASED
@@ -463,12 +490,16 @@ async function runPhase8Verification() {
 	if (reassignRes.assignment.status !== AssignmentStatus.ACTIVE) {
 		throw new Error("New assignment status is not ACTIVE!");
 	}
-	console.log("✔ Test 10 passed: Re-assignment safely released old record and created active new assignment.");
+	console.log(
+		"✔ Test 10 passed: Re-assignment safely released old record and created active new assignment.",
+	);
 
 	// ==================================================
 	// TEST 11: Reject Invalid Status Assignment
 	// ==================================================
-	console.log("\n[TEST 11] Testing assignment on unapproved SUBMITTED request...");
+	console.log(
+		"\n[TEST 11] Testing assignment on unapproved SUBMITTED request...",
+	);
 	const req3Submitted = await ServiceRequestService.createServiceRequest(
 		citizenUser.id,
 		{
@@ -504,11 +535,17 @@ async function runPhase8Verification() {
 		tech1User.id,
 		{},
 	);
-	console.log(`-> Technician 1 has ${tech1MyAssignments.length} total assignment history records.`);
+	console.log(
+		`-> Technician 1 has ${tech1MyAssignments.length} total assignment history records.`,
+	);
 	if (tech1MyAssignments.length < 2) {
-		throw new Error("Technician 1 should have at least 2 assignment history records!");
+		throw new Error(
+			"Technician 1 should have at least 2 assignment history records!",
+		);
 	}
-	console.log("✔ Test 12 passed: Technician successfully retrieved work order history.");
+	console.log(
+		"✔ Test 12 passed: Technician successfully retrieved work order history.",
+	);
 
 	console.log("\n==========================================");
 	console.log("   🎉 ALL PHASE 8 VERIFICATION TESTS PASSED!");

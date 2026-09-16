@@ -9,6 +9,7 @@ import httpStatus from "http-status";
 import config from "./app/config";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
+import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
 import { AuthRoutes } from "./app/module/auth/auth.route";
 import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
@@ -19,7 +20,6 @@ import { StaffRoutes } from "./app/module/staff/staff.route";
 import { UserRoutes } from "./app/module/user/user.route";
 import { WardRoutes } from "./app/module/ward/ward.route";
 import { ZoneRoutes } from "./app/module/zone/zone.route";
-import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
 
 const app: Application = express();
 
@@ -48,7 +48,6 @@ app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
 app.use("/api/v1/assignments", AssignmentRoutes);
-
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

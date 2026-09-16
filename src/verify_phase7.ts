@@ -1,3 +1,7 @@
+import { prisma } from "./app/lib/prisma";
+import { CategoryService } from "./app/module/category/category.service";
+import { ServiceService } from "./app/module/service/service.service";
+import { ServiceRequestService } from "./app/module/serviceRequest/serviceRequest.service";
 import {
 	PaymentStatus,
 	RequestStatus,
@@ -6,10 +10,6 @@ import {
 	StaffType,
 	UserStatus,
 } from "./generated/prisma/client";
-import { prisma } from "./app/lib/prisma";
-import { CategoryService } from "./app/module/category/category.service";
-import { ServiceService } from "./app/module/service/service.service";
-import { ServiceRequestService } from "./app/module/serviceRequest/serviceRequest.service";
 
 async function runPhase7Verification() {
 	console.log("=== STARTING PHASE 7 VERIFICATION ===");
@@ -75,7 +75,9 @@ async function runPhase7Verification() {
 		isPaid: false,
 	});
 
-	console.log(`✔ Created Infrastructure, Dept (${dept.code}), & Municipal Service (${service.code})`);
+	console.log(
+		`✔ Created Infrastructure, Dept (${dept.code}), & Municipal Service (${service.code})`,
+	);
 
 	// 2. Setup Users: Citizen 1, Citizen 2, Officer, Manager, Technician, Other Staff, Admin
 	const citizenUser1 = await prisma.user.create({
@@ -197,22 +199,33 @@ async function runPhase7Verification() {
 	console.log(`✔ Created Test Users (Citizen, Officer, Manager, Tech, Admin)`);
 
 	// 3. TEST: Request Creation & Initial Audit Log
-	const req1 = await ServiceRequestService.createServiceRequest(citizenUser1.id, {
-		serviceId: service.id,
-		title: "Blocked main drain outlet",
-		description: "Severe blockage causing wastewater backup on residential road.",
-		priority: ServicePriority.HIGH,
-		location: {
-			wardId: ward.id,
-			address: "House 5, Road 2",
+	const req1 = await ServiceRequestService.createServiceRequest(
+		citizenUser1.id,
+		{
+			serviceId: service.id,
+			title: "Blocked main drain outlet",
+			description:
+				"Severe blockage causing wastewater backup on residential road.",
+			priority: ServicePriority.HIGH,
+			location: {
+				wardId: ward.id,
+				address: "House 5, Road 2",
+			},
 		},
-	});
+	);
 
-	console.log(`✔ Service Request Created: ${req1.trackingNumber} (Status: ${req1.status})`);
-	if (req1.statusHistory.length !== 1 || req1.statusHistory[0].toStatus !== RequestStatus.SUBMITTED) {
+	console.log(
+		`✔ Service Request Created: ${req1.trackingNumber} (Status: ${req1.status})`,
+	);
+	if (
+		req1.statusHistory.length !== 1 ||
+		req1.statusHistory[0].toStatus !== RequestStatus.SUBMITTED
+	) {
 		throw new Error("❌ Initial status history creation assertion failed!");
 	}
-	console.log(`✔ Verified Initial Status History log entry (null -> SUBMITTED)`);
+	console.log(
+		`✔ Verified Initial Status History log entry (null -> SUBMITTED)`,
+	);
 
 	// 4. TEST: Full Valid Workflow Lifecycle Transitions
 	// Step 1: Officer moves SUBMITTED -> UNDER_REVIEW
@@ -220,7 +233,10 @@ async function runPhase7Verification() {
 		req1.id,
 		Role.STAFF,
 		officerUser.id,
-		{ status: RequestStatus.UNDER_REVIEW, note: "Officer initialized technical review" },
+		{
+			status: RequestStatus.UNDER_REVIEW,
+			note: "Officer initialized technical review",
+		},
 	);
 	console.log(`✔ Step 1: SUBMITTED -> UNDER_REVIEW (Status: ${step1.status})`);
 
@@ -238,7 +254,10 @@ async function runPhase7Verification() {
 		req1.id,
 		Role.STAFF,
 		managerUser.id,
-		{ status: RequestStatus.ASSIGNED, note: "Assigned to sanitation field crew" },
+		{
+			status: RequestStatus.ASSIGNED,
+			note: "Assigned to sanitation field crew",
+		},
 	);
 	console.log(`✔ Step 3: APPROVED -> ASSIGNED (Status: ${step3.status})`);
 
@@ -256,7 +275,10 @@ async function runPhase7Verification() {
 		req1.id,
 		Role.STAFF,
 		techUser.id,
-		{ status: RequestStatus.IN_PROGRESS, note: "Drain cleaning operations commenced" },
+		{
+			status: RequestStatus.IN_PROGRESS,
+			note: "Drain cleaning operations commenced",
+		},
 	);
 	console.log(`✔ Step 5: ACCEPTED -> IN_PROGRESS (Status: ${step5.status})`);
 
@@ -265,18 +287,28 @@ async function runPhase7Verification() {
 		req1.id,
 		Role.STAFF,
 		techUser.id,
-		{ status: RequestStatus.RESOLUTION_SUBMITTED, note: "Blockage cleared successfully" },
+		{
+			status: RequestStatus.RESOLUTION_SUBMITTED,
+			note: "Blockage cleared successfully",
+		},
 	);
-	console.log(`✔ Step 6: IN_PROGRESS -> RESOLUTION_SUBMITTED (Status: ${step6.status})`);
+	console.log(
+		`✔ Step 6: IN_PROGRESS -> RESOLUTION_SUBMITTED (Status: ${step6.status})`,
+	);
 
 	// Step 7: Manager moves RESOLUTION_SUBMITTED -> VERIFICATION
 	const step7 = await ServiceRequestService.updateServiceRequestStatus(
 		req1.id,
 		Role.STAFF,
 		managerUser.id,
-		{ status: RequestStatus.VERIFICATION, note: "Field inspection in progress" },
+		{
+			status: RequestStatus.VERIFICATION,
+			note: "Field inspection in progress",
+		},
 	);
-	console.log(`✔ Step 7: RESOLUTION_SUBMITTED -> VERIFICATION (Status: ${step7.status})`);
+	console.log(
+		`✔ Step 7: RESOLUTION_SUBMITTED -> VERIFICATION (Status: ${step7.status})`,
+	);
 
 	// Step 8: Manager moves VERIFICATION -> RESOLVED
 	const step8 = await ServiceRequestService.updateServiceRequestStatus(
@@ -304,18 +336,25 @@ async function runPhase7Verification() {
 			adminUser.id,
 			{ status: RequestStatus.IN_PROGRESS },
 		);
-		throw new Error("❌ FAILED: Terminal CLOSED state modification was not rejected!");
+		throw new Error(
+			"❌ FAILED: Terminal CLOSED state modification was not rejected!",
+		);
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected transition from terminal CLOSED state: "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected transition from terminal CLOSED state: "${err.message}"`,
+		);
 	}
 
 	// 6. TEST: Invalid Direct Jump Rejection (SUBMITTED -> RESOLVED)
-	const req2 = await ServiceRequestService.createServiceRequest(citizenUser1.id, {
-		serviceId: service.id,
-		title: "Second complaint",
-		description: "Description testing direct invalid jump.",
-		location: { wardId: ward.id, address: "Address 2" },
-	});
+	const req2 = await ServiceRequestService.createServiceRequest(
+		citizenUser1.id,
+		{
+			serviceId: service.id,
+			title: "Second complaint",
+			description: "Description testing direct invalid jump.",
+			location: { wardId: ward.id, address: "Address 2" },
+		},
+	);
 
 	try {
 		await ServiceRequestService.updateServiceRequestStatus(
@@ -326,7 +365,9 @@ async function runPhase7Verification() {
 		);
 		throw new Error("❌ FAILED: Invalid direct status jump was not rejected!");
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected invalid direct status jump (SUBMITTED -> RESOLVED): "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected invalid direct status jump (SUBMITTED -> RESOLVED): "${err.message}"`,
+		);
 	}
 
 	// 7. TEST: Role Permission Policy Rejection (Citizen attempting APPROVED)
@@ -337,9 +378,13 @@ async function runPhase7Verification() {
 			citizenUser1.id,
 			{ status: RequestStatus.APPROVED },
 		);
-		throw new Error("❌ FAILED: Citizen role status escalation was not rejected!");
+		throw new Error(
+			"❌ FAILED: Citizen role status escalation was not rejected!",
+		);
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected unauthorized Citizen status change: "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected unauthorized Citizen status change: "${err.message}"`,
+		);
 	}
 
 	// 8. TEST: Department Scope Boundary Rejection (Other Dept Staff modifying request)
@@ -350,9 +395,13 @@ async function runPhase7Verification() {
 			otherDeptUser.id,
 			{ status: RequestStatus.UNDER_REVIEW },
 		);
-		throw new Error("❌ FAILED: Cross-department staff modification was not rejected!");
+		throw new Error(
+			"❌ FAILED: Cross-department staff modification was not rejected!",
+		);
 	} catch (err: any) {
-		console.log(`✔ Correctly rejected cross-department staff modification: "${err.message}"`);
+		console.log(
+			`✔ Correctly rejected cross-department staff modification: "${err.message}"`,
+		);
 	}
 
 	// 9. TEST: Citizen Cancellation Rule
@@ -362,7 +411,9 @@ async function runPhase7Verification() {
 		citizenUser1.id,
 		{ status: RequestStatus.CANCELLED, note: "Issue resolved by neighbor" },
 	);
-	console.log(`✔ Citizen 1 cancelled own request successfully (Status: ${cancelRes.status})`);
+	console.log(
+		`✔ Citizen 1 cancelled own request successfully (Status: ${cancelRes.status})`,
+	);
 
 	// 10. TEST: Status History Audit Trail API
 	const history = await ServiceRequestService.getServiceRequestHistory(
@@ -370,9 +421,13 @@ async function runPhase7Verification() {
 		Role.ADMIN,
 		adminUser.id,
 	);
-	console.log(`✔ Status History Audit Trail fetched (${history.length} entries total):`);
+	console.log(
+		`✔ Status History Audit Trail fetched (${history.length} entries total):`,
+	);
 	for (const h of history) {
-		console.log(`   [${h.createdAt.toISOString()}] ${h.fromStatus || "NULL"} -> ${h.toStatus} (User: ${h.changedBy.name}, Note: "${h.note || ""}")`);
+		console.log(
+			`   [${h.createdAt.toISOString()}] ${h.fromStatus || "NULL"} -> ${h.toStatus} (User: ${h.changedBy.name}, Note: "${h.note || ""}")`,
+		);
 	}
 
 	if (history.length !== 10) {

@@ -18,6 +18,8 @@ model User {
   staffProfile         StaffProfile?
   statusHistoryChanges RequestStatusHistory[]
   assignedAssignments  Assignment[]
+  resolutions          Resolution[]
+  uploadedAttachments  RequestAttachment[]
 
 
   @@unique([email])

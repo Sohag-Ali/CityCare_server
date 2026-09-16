@@ -8,10 +8,12 @@ import { Role } from "../../../generated/prisma/client";
 import { upload } from "../../lib/multer";
 import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
-import { ServiceRequestController } from "./serviceRequest.controller";
-import { ServiceRequestValidation } from "./serviceRequest.validation";
 import { AssignmentController } from "../assignment/assignment.controller";
 import { AssignmentValidation } from "../assignment/assignment.validation";
+import { TechnicianWorkController } from "../technicianWork/technicianWork.controller";
+import { TechnicianWorkValidation } from "../technicianWork/technicianWork.validation";
+import { ServiceRequestController } from "./serviceRequest.controller";
+import { ServiceRequestValidation } from "./serviceRequest.validation";
 
 const router = Router();
 
@@ -56,6 +58,49 @@ router.post(
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
 	validateRequest(AssignmentValidation.assignTechnicianZodSchema),
 	AssignmentController.assignTechnician,
+);
+
+router.patch(
+	"/:id/start",
+	auth(Role.STAFF),
+	TechnicianWorkController.startWork,
+);
+
+router.post(
+	"/:id/updates",
+	auth(Role.STAFF),
+	upload.array("files", 5),
+	parseMultipartJsonBody,
+	validateRequest(TechnicianWorkValidation.createTechnicianUpdateZodSchema),
+	TechnicianWorkController.createTechnicianUpdate,
+);
+
+router.get(
+	"/:id/updates",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	TechnicianWorkController.getTechnicianUpdates,
+);
+
+router.post(
+	"/:id/resolution",
+	auth(Role.STAFF),
+	upload.array("files", 5),
+	parseMultipartJsonBody,
+	validateRequest(TechnicianWorkValidation.submitResolutionZodSchema),
+	TechnicianWorkController.submitResolution,
+);
+
+router.get(
+	"/:id/resolution",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	TechnicianWorkController.getResolution,
+);
+
+router.post(
+	"/:id/evidence",
+	auth(Role.STAFF),
+	upload.array("files", 5),
+	TechnicianWorkController.uploadEvidence,
 );
 
 router.get(

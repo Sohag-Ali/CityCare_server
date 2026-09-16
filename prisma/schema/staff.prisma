@@ -14,9 +14,10 @@ model StaffProfile {
   updatedAt     DateTime   @updatedAt
 
   // Relations
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  department    Department @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  assignments   Assignment[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  department        Department         @relation(fields: [departmentId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  assignments       Assignment[]
+  technicianUpdates TechnicianUpdate[]
 
   @@index([userId], name: "idx_staff_userId")
   @@index([employeeId], name: "idx_staff_employeeId")
