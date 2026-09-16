@@ -10,6 +10,8 @@ import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
 import { AssignmentController } from "../assignment/assignment.controller";
 import { AssignmentValidation } from "../assignment/assignment.validation";
+import { AttachmentController } from "../attachment/attachment.controller";
+import { AttachmentValidation } from "../attachment/attachment.validation";
 import { ResolutionVerificationController } from "../resolutionVerification/resolutionVerification.controller";
 import { ResolutionVerificationValidation } from "../resolutionVerification/resolutionVerification.validation";
 import { SlaController } from "../sla/sla.controller";
@@ -97,6 +99,27 @@ router.get(
 	"/:id/resolution",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	TechnicianWorkController.getResolution,
+);
+
+router.post(
+	"/:id/attachments",
+	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
+	upload.array("files", 5),
+	parseMultipartJsonBody,
+	validateRequest(AttachmentValidation.uploadAttachmentZodSchema),
+	AttachmentController.uploadAttachments,
+);
+
+router.get(
+	"/:id/attachments",
+	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
+	AttachmentController.getRequestAttachments,
+);
+
+router.delete(
+	"/:id/attachments/:attachmentId",
+	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
+	AttachmentController.deleteAttachment,
 );
 
 router.post(

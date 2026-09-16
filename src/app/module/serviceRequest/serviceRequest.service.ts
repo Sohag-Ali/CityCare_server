@@ -625,7 +625,21 @@ const getServiceRequestById = async (
 					},
 				},
 			},
-			attachments: true,
+			attachments: {
+				orderBy: {
+					createdAt: "asc",
+				},
+				include: {
+					uploadedBy: {
+						select: {
+							id: true,
+							name: true,
+							email: true,
+							role: true,
+						},
+					},
+				},
+			},
 			assignments: {
 				orderBy: {
 					createdAt: "desc",

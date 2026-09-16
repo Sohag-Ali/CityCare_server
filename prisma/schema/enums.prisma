@@ -71,9 +71,11 @@ enum AssignmentStatus {
 }
 
 enum EvidenceType {
+  COMPLAINT
   BEFORE
   PROGRESS
   AFTER
+  RESOLUTION
   OTHER
 }
 
