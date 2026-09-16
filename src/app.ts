@@ -2,11 +2,13 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, {
 	type Application,
+	NextFunction,
 	type Request,
 	type Response,
 } from "express";
 import httpStatus from "http-status";
 import config from "./app/config";
+import { getBkashIdToken } from "./app/lib/bkash";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
@@ -14,6 +16,7 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
 import { MunicipalityRoutes } from "./app/module/municipality/municipality.route";
+import { PaymentRoutes } from "./app/module/payment/payment.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
 import { ServiceRequestRoutes } from "./app/module/serviceRequest/serviceRequest.route";
 import { SlaRoutes } from "./app/module/sla/sla.route";
@@ -50,6 +53,26 @@ app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
 app.use("/api/v1/assignments", AssignmentRoutes);
 app.use("/api/v1/sla-policies", SlaRoutes);
+app.use("/api/v1/payments", PaymentRoutes);
+
+// app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
+
+// 	try {
+
+// 		const grantIdTokenResult = await getBkashIdToken()
+
+// 		console.log(grantIdTokenResult);
+
+// 		res.status(httpStatus.OK).json({
+// 			success: true,
+// 			message: "Welcome to PH Healthcare System Backend",
+// 			data : null
+// 		});
+// 	} catch (error) {
+// 		console.log(error);
+// 		next(error)
+// 	}
+// })
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

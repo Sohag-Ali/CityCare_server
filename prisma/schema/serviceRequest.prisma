@@ -34,6 +34,7 @@ model ServiceRequest {
   verifications     ResolutionVerification[]
   slaEvents         SlaEvent[]
   escalations       Escalation[]
+  payments          Payment[]
 
   @@index([citizenId], name: "idx_request_citizenId")
   @@index([serviceId], name: "idx_request_serviceId")
