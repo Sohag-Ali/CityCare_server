@@ -11,20 +11,29 @@ model ServiceRequest {
   amount         Decimal?        @db.Decimal(12, 2)
   currency       String?
   paymentStatus  PaymentStatus   @default(NOT_REQUIRED)
-  isDeleted      Boolean         @default(false)
-  deletedAt      DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  responseDueAt         DateTime?
+  resolutionDueAt       DateTime?
+  responseStartedAt     DateTime?
+  responseCompletedAt   DateTime?
+  resolutionStartedAt   DateTime?
+  resolutionCompletedAt DateTime?
+  isDeleted             Boolean                @default(false)
+  deletedAt             DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
 
   // Relations
-  citizen           Citizen                @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  service           MunicipalService       @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  citizen           Citizen                  @relation(fields: [citizenId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  service           MunicipalService         @relation(fields: [serviceId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   location          RequestLocation?
   attachments       RequestAttachment[]
   statusHistory     RequestStatusHistory[]
   assignments       Assignment[]
   technicianUpdates TechnicianUpdate[]
   resolutions       Resolution[]
+  verifications     ResolutionVerification[]
+  slaEvents         SlaEvent[]
+  escalations       Escalation[]
 
   @@index([citizenId], name: "idx_request_citizenId")
   @@index([serviceId], name: "idx_request_serviceId")
@@ -32,6 +41,8 @@ model ServiceRequest {
   @@index([paymentStatus], name: "idx_request_paymentStatus")
   @@index([isDeleted], name: "idx_request_isDeleted")
   @@index([createdAt], name: "idx_request_createdAt")
+  @@index([responseDueAt], name: "idx_request_responseDueAt")
+  @@index([resolutionDueAt], name: "idx_request_resolutionDueAt")
   @@map("service_requests")
 }
 

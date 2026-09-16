@@ -10,6 +10,9 @@ import { auth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validationRequest";
 import { AssignmentController } from "../assignment/assignment.controller";
 import { AssignmentValidation } from "../assignment/assignment.validation";
+import { ResolutionVerificationController } from "../resolutionVerification/resolutionVerification.controller";
+import { ResolutionVerificationValidation } from "../resolutionVerification/resolutionVerification.validation";
+import { SlaController } from "../sla/sla.controller";
 import { TechnicianWorkController } from "../technicianWork/technicianWork.controller";
 import { TechnicianWorkValidation } from "../technicianWork/technicianWork.validation";
 import { ServiceRequestController } from "./serviceRequest.controller";
@@ -101,6 +104,19 @@ router.post(
 	auth(Role.STAFF),
 	upload.array("files", 5),
 	TechnicianWorkController.uploadEvidence,
+);
+
+router.post(
+	"/:id/verify",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
+	validateRequest(ResolutionVerificationValidation.verifyResolutionZodSchema),
+	ResolutionVerificationController.verifyResolution,
+);
+
+router.get(
+	"/:id/sla",
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	SlaController.getRequestSlaStatus,
 );
 
 router.get(

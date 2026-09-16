@@ -1,0 +1,20 @@
+model Escalation {
+  id                      String           @id @default(uuid())
+  serviceRequestId        String
+  trigger                 String           @default("SLA_BREACH")
+  level                   Int              @default(1)
+  escalatedToDepartmentId String?
+  reason                  String
+  status                  EscalationStatus @default(OPEN)
+  createdAt               DateTime         @default(now())
+  resolvedAt              DateTime?
+
+  // Relations
+  serviceRequest        ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  escalatedToDepartment Department?    @relation(fields: [escalatedToDepartmentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([serviceRequestId], name: "idx_escalation_serviceRequestId")
+  @@index([status], name: "idx_escalation_status")
+  @@index([createdAt], name: "idx_escalation_createdAt")
+  @@map("escalations")
+}

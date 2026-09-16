@@ -32,7 +32,11 @@ export const ALLOWED_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
 		RequestStatus.RESOLUTION_SUBMITTED,
 		RequestStatus.ESCALATED,
 	],
-	[RequestStatus.RESOLUTION_SUBMITTED]: [RequestStatus.VERIFICATION],
+	[RequestStatus.RESOLUTION_SUBMITTED]: [
+		RequestStatus.VERIFICATION,
+		RequestStatus.RESOLVED,
+		RequestStatus.IN_PROGRESS,
+	],
 	[RequestStatus.VERIFICATION]: [
 		RequestStatus.RESOLVED,
 		RequestStatus.IN_PROGRESS,

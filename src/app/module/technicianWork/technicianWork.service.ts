@@ -177,15 +177,24 @@ const startWork = async (
 	}
 
 	// Atomic transaction
+	const now = new Date();
 	const result = await prisma.$transaction(
 		async (tx) => {
 			const updatedRequest = await tx.serviceRequest.update({
 				where: { id: requestId },
-				data: { status: RequestStatus.IN_PROGRESS },
+				data: {
+					status: RequestStatus.IN_PROGRESS,
+					responseStartedAt: serviceRequest.responseStartedAt || now,
+					responseCompletedAt: serviceRequest.responseCompletedAt || now,
+					resolutionStartedAt: serviceRequest.resolutionStartedAt || now,
+				},
 				select: {
 					id: true,
 					trackingNumber: true,
 					status: true,
+					responseStartedAt: true,
+					responseCompletedAt: true,
+					resolutionStartedAt: true,
 					updatedAt: true,
 				},
 			});

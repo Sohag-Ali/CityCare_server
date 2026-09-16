@@ -16,6 +16,7 @@ model Department {
   municipality   Municipality   @relation(fields: [municipalityId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   staffProfiles  StaffProfile[]
   categories     Category[]
+  escalations    Escalation[]
 
   @@unique([municipalityId, code], name: "unique_municipality_department_code")
   @@index([municipalityId], name: "idx_department_municipalityId")

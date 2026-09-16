@@ -1,0 +1,11 @@
+model SlaPolicy {
+  id                    String          @id @default(uuid())
+  priority              ServicePriority @unique
+  responseTimeMinutes   Int
+  resolutionTimeMinutes Int
+  isActive              Boolean         @default(true)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@map("sla_policies")
+}

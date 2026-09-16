@@ -9,9 +9,10 @@ model Resolution {
   updatedAt        DateTime            @updatedAt
 
   // Relations
-  serviceRequest   ServiceRequest      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  submittedBy      User                @relation(fields: [submittedById], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  serviceRequest   ServiceRequest           @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  submittedBy      User                     @relation(fields: [submittedById], references: [id], onDelete: Restrict, onUpdate: Cascade)
   attachments      RequestAttachment[]
+  verifications    ResolutionVerification[]
 
   @@index([serviceRequestId], name: "idx_resolution_serviceRequestId")
   @@index([submittedById], name: "idx_resolution_submittedById")

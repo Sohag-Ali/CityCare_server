@@ -16,6 +16,7 @@ import { DepartmentRoutes } from "./app/module/department/department.route";
 import { MunicipalityRoutes } from "./app/module/municipality/municipality.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
 import { ServiceRequestRoutes } from "./app/module/serviceRequest/serviceRequest.route";
+import { SlaRoutes } from "./app/module/sla/sla.route";
 import { StaffRoutes } from "./app/module/staff/staff.route";
 import { UserRoutes } from "./app/module/user/user.route";
 import { WardRoutes } from "./app/module/ward/ward.route";
@@ -48,6 +49,7 @@ app.use("/api/v1/categories", CategoryRoutes);
 app.use("/api/v1/services", ServiceRoutes);
 app.use("/api/v1/service-requests", ServiceRequestRoutes);
 app.use("/api/v1/assignments", AssignmentRoutes);
+app.use("/api/v1/sla-policies", SlaRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {

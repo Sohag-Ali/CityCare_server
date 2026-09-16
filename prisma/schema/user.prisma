@@ -20,6 +20,7 @@ model User {
   assignedAssignments  Assignment[]
   resolutions          Resolution[]
   uploadedAttachments  RequestAttachment[]
+  verifications        ResolutionVerification[]
 
 
   @@unique([email])

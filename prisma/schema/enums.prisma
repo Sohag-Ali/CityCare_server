@@ -77,4 +77,21 @@ enum EvidenceType {
   OTHER
 }
 
+enum VerificationDecision {
+  APPROVED
+  REWORK_REQUIRED
+}
+
+enum SlaEventType {
+  WARNING
+  BREACH
+  ESCALATION
+}
+
+enum EscalationStatus {
+  OPEN
+  RESOLVED
+}
+
+
 

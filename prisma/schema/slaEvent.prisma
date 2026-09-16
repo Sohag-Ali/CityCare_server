@@ -1,0 +1,16 @@
+model SlaEvent {
+  id               String       @id @default(uuid())
+  serviceRequestId String
+  type             SlaEventType
+  occurredAt       DateTime     @default(now())
+  metadata         String?
+  createdAt        DateTime     @default(now())
+
+  // Relations
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([serviceRequestId], name: "idx_slaevent_serviceRequestId")
+  @@index([type], name: "idx_slaevent_type")
+  @@index([occurredAt], name: "idx_slaevent_occurredAt")
+  @@map("sla_events")
+}

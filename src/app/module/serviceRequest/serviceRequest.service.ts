@@ -11,6 +11,7 @@ import {
 import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { SlaService } from "../sla/sla.service";
 import type {
 	IAttachmentInput,
 	ICreateServiceRequestPayload,
@@ -338,7 +339,17 @@ const createServiceRequest = async (
 		return created;
 	});
 
-	return newRequest;
+	const updatedWithSla = await SlaService.snapshotRequestSlaDeadlines(
+		newRequest.id,
+		priority,
+		newRequest.createdAt,
+	);
+
+	return {
+		...newRequest,
+		responseDueAt: updatedWithSla.responseDueAt,
+		resolutionDueAt: updatedWithSla.resolutionDueAt,
+	};
 };
 
 const getAllServiceRequests = async (
