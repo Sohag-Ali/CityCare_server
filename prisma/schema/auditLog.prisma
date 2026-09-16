@@ -1,0 +1,58 @@
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGIN_FAILED
+  LOGOUT
+  STATUS_CHANGE
+  ASSIGN
+  REASSIGN
+  APPROVE
+  REJECT
+  VERIFY
+  ESCALATE
+  PAYMENT_INITIATED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  PAYMENT_CANCELLED
+  PASSWORD_RESET
+  STAFF_ACTIVATED
+  STAFF_DEACTIVATED
+}
+
+enum AuditEntity {
+  USER
+  STAFF
+  CATEGORY
+  MUNICIPAL_SERVICE
+  SERVICE_REQUEST
+  ASSIGNMENT
+  RESOLUTION
+  PAYMENT
+  SLA
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  actorId    String?
+  action     AuditAction
+  entityType AuditEntity
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  // Relations
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([actorId], name: "idx_audit_actorId")
+  @@index([action], name: "idx_audit_action")
+  @@index([entityType], name: "idx_audit_entityType")
+  @@index([entityId], name: "idx_audit_entityId")
+  @@index([createdAt], name: "idx_audit_createdAt")
+  @@index([entityType, entityId], name: "idx_audit_entity_composite")
+  @@map("audit_logs")
+}

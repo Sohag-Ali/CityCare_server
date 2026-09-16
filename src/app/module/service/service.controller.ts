@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type {
 	IPaginationOptions,
 	IServiceFilterOptions,
@@ -9,7 +10,13 @@ import type {
 import { ServiceService } from "./service.service";
 
 const createService = catchAsync(async (req: Request, res: Response) => {
-	const result = await ServiceService.createService(req.body);
+	const authUserId = req.user?.userId;
+	const clientInfo = AuditLogService.extractClientInfo(req);
+	const result = await ServiceService.createService(
+		req.body,
+		authUserId,
+		clientInfo,
+	);
 
 	sendResponse(res, {
 		statusCode: httpStatus.CREATED,
@@ -77,7 +84,14 @@ const getServiceById = catchAsync(async (req: Request, res: Response) => {
 
 const updateService = catchAsync(async (req: Request, res: Response) => {
 	const id = req.params.id as string;
-	const result = await ServiceService.updateService(id, req.body);
+	const authUserId = req.user?.userId;
+	const clientInfo = AuditLogService.extractClientInfo(req);
+	const result = await ServiceService.updateService(
+		id,
+		req.body,
+		authUserId,
+		clientInfo,
+	);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,
@@ -89,7 +103,9 @@ const updateService = catchAsync(async (req: Request, res: Response) => {
 
 const deleteService = catchAsync(async (req: Request, res: Response) => {
 	const id = req.params.id as string;
-	const result = await ServiceService.deleteService(id);
+	const authUserId = req.user?.userId;
+	const clientInfo = AuditLogService.extractClientInfo(req);
+	const result = await ServiceService.deleteService(id, authUserId, clientInfo);
 
 	sendResponse(res, {
 		statusCode: httpStatus.OK,

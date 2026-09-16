@@ -5,16 +5,19 @@ import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import path from "path";
 import {
+	AuditAction,
+	AuditEntity,
 	AuthProvider,
 	Role,
 	UserStatus,
-} from "../../../generated/prisma/enums";
+} from "../../../generated/prisma/client";
 import config from "../../config";
 import { googleClient } from "../../lib/googleAuth";
 import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { jwtUtils } from "../../utils/jwt";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type {
 	IActivateStaffPayload,
 	IForgotPasswordPayload,
@@ -211,7 +214,10 @@ const verifyCitizenEmail = async (payload: IVerifyEmailPayload) => {
 	};
 };
 
-const loginUser = async (payload: ILoginUserPayload) => {
+const loginUser = async (
+	payload: ILoginUserPayload,
+	clientInfo?: { ipAddress?: string | null; userAgent?: string | null },
+) => {
 	const { password } = payload;
 	const email = payload.email.trim().toLowerCase();
 
@@ -220,14 +226,39 @@ const loginUser = async (payload: ILoginUserPayload) => {
 	});
 
 	if (!user) {
+		await AuditLogService.createAuditLog({
+			action: AuditAction.LOGIN_FAILED,
+			entityType: AuditEntity.USER,
+			newValue: { email },
+			ipAddress: clientInfo?.ipAddress,
+			userAgent: clientInfo?.userAgent,
+		});
 		throw new Error("User not found");
 	}
 
 	if (user.status === UserStatus.BLOCKED) {
+		await AuditLogService.createAuditLog({
+			actorId: user.id,
+			action: AuditAction.LOGIN_FAILED,
+			entityType: AuditEntity.USER,
+			entityId: user.id,
+			newValue: { email, reason: "BLOCKED" },
+			ipAddress: clientInfo?.ipAddress,
+			userAgent: clientInfo?.userAgent,
+		});
 		throw new Error("User is blocked");
 	}
 
 	if (user.isDeleted || user.status === UserStatus.DELETED) {
+		await AuditLogService.createAuditLog({
+			actorId: user.id,
+			action: AuditAction.LOGIN_FAILED,
+			entityType: AuditEntity.USER,
+			entityId: user.id,
+			newValue: { email, reason: "DELETED" },
+			ipAddress: clientInfo?.ipAddress,
+			userAgent: clientInfo?.userAgent,
+		});
 		throw new Error("User is deleted");
 	}
 
@@ -237,8 +268,27 @@ const loginUser = async (payload: ILoginUserPayload) => {
 	);
 
 	if (!isPasswordMatched) {
+		await AuditLogService.createAuditLog({
+			actorId: user.id,
+			action: AuditAction.LOGIN_FAILED,
+			entityType: AuditEntity.USER,
+			entityId: user.id,
+			newValue: { email, reason: "INVALID_PASSWORD" },
+			ipAddress: clientInfo?.ipAddress,
+			userAgent: clientInfo?.userAgent,
+		});
 		throw new Error("Invalid credentials");
 	}
+
+	await AuditLogService.createAuditLog({
+		actorId: user.id,
+		action: AuditAction.LOGIN,
+		entityType: AuditEntity.USER,
+		entityId: user.id,
+		newValue: { email, role: user.role },
+		ipAddress: clientInfo?.ipAddress,
+		userAgent: clientInfo?.userAgent,
+	});
 
 	const jwtPayload = {
 		userId: user.id,

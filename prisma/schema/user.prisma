@@ -21,6 +21,7 @@ model User {
   resolutions          Resolution[]
   uploadedAttachments  RequestAttachment[]
   verifications        ResolutionVerification[]
+  auditLogs            AuditLog[]
 
 
   @@unique([email])

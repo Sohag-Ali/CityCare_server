@@ -12,6 +12,7 @@ import { getBkashIdToken } from "./app/lib/bkash";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
+import { AuditLogRoutes } from "./app/module/auditLog/auditLog.route";
 import { AuthRoutes } from "./app/module/auth/auth.route";
 import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
@@ -54,6 +55,7 @@ app.use("/api/v1/service-requests", ServiceRequestRoutes);
 app.use("/api/v1/assignments", AssignmentRoutes);
 app.use("/api/v1/sla-policies", SlaRoutes);
 app.use("/api/v1/payments", PaymentRoutes);
+app.use("/api/v1/audit-logs", AuditLogRoutes);
 
 // app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
 

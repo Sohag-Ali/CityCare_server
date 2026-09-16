@@ -3,12 +3,18 @@ import crypto from "crypto";
 import ejs from "ejs";
 import httpStatus from "http-status";
 import path from "path";
-import { Role, UserStatus } from "../../../generated/prisma/enums";
+import {
+	AuditAction,
+	AuditEntity,
+	Role,
+	UserStatus,
+} from "../../../generated/prisma/client";
 import config from "../../config";
 import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { AppError } from "../../utils/AppError";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type {
 	ICreateStaffPayload,
 	IPaginationOptions,
@@ -16,7 +22,11 @@ import type {
 	IUpdateStaffPayload,
 } from "./staff.interface";
 
-const createStaff = async (payload: ICreateStaffPayload) => {
+const createStaff = async (
+	payload: ICreateStaffPayload,
+	authUserId?: string,
+	clientInfo?: { ipAddress?: string | null; userAgent?: string | null },
+) => {
 	const normalizedEmail = payload.email.trim().toLowerCase();
 
 	// 1. Verify email uniqueness
@@ -107,6 +117,24 @@ const createStaff = async (payload: ICreateStaffPayload) => {
 				},
 			},
 		});
+
+		await AuditLogService.createAuditLog(
+			{
+				actorId: authUserId || null,
+				action: AuditAction.CREATE,
+				entityType: AuditEntity.STAFF,
+				entityId: staffProfile.id,
+				newValue: {
+					employeeId: staffProfile.employeeId,
+					departmentId: staffProfile.departmentId,
+					staffType: staffProfile.staffType,
+					email: normalizedEmail,
+				},
+				ipAddress: clientInfo?.ipAddress,
+				userAgent: clientInfo?.userAgent,
+			},
+			tx,
+		);
 
 		return staffProfile;
 	});

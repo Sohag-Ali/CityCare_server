@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 import { AuthValidation } from "./auth.validation";
@@ -88,7 +89,8 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 		});
 		throw new Error(errorMessage.slice(0, -2));
 	}
-	const result = await AuthService.loginUser(payload.data);
+	const clientInfo = AuditLogService.extractClientInfo(req);
+	const result = await AuthService.loginUser(payload.data, clientInfo);
 	const { accessToken, refreshToken } = result;
 
 	res.cookie("accessToken", accessToken, {

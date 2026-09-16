@@ -36,7 +36,6 @@ export const seedSuperAdmin = async () => {
 				email,
 				password: hashedPassword,
 				role: Role.SUPER_ADMIN,
-				needPasswordChange: false,
 				emailVerified: true,
 			},
 		});
@@ -82,7 +81,6 @@ export const seedTesterAdmin = async () => {
 				email,
 				password: hashedPassword,
 				role: Role.ADMIN,
-				needPasswordChange: false,
 				emailVerified: true,
 			},
 		});

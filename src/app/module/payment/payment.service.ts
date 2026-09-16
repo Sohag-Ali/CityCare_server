@@ -1,5 +1,7 @@
 import httpStatus from "http-status";
 import {
+	AuditAction,
+	AuditEntity,
 	PaymentState,
 	PaymentStatus,
 	Prisma,
@@ -12,6 +14,7 @@ import {
 } from "../../lib/bkash";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type {
 	IInitiatePaymentPayload,
 	IPaginationOptions,
@@ -186,6 +189,21 @@ const initiatePayment = async (
 			},
 		});
 
+		// Create AuditLog for PAYMENT_INITIATED
+		await AuditLogService.createAuditLog({
+			actorId: citizen.userId,
+			action: AuditAction.PAYMENT_INITIATED,
+			entityType: AuditEntity.PAYMENT,
+			entityId: payment.id,
+			newValue: {
+				serviceRequestId: request.id,
+				amount: amountToCharge.toString(),
+				currency,
+				merchantInvoiceNumber,
+				bkashPaymentId: bkashRes.paymentID,
+			},
+		});
+
 		// Return checkout URL safely (Never expose tokens or app secret)
 		return {
 			paymentId: payment.id,
@@ -225,7 +243,7 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 	// 1. Identify payment record
 	const payment = await prisma.payment.findFirst({
 		where: { bkashPaymentId: paymentID },
-		include: { serviceRequest: true },
+		include: { serviceRequest: true, citizen: true },
 	});
 
 	if (!payment) {
@@ -265,6 +283,13 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 			},
 		});
 
+		await AuditLogService.createAuditLog({
+			actorId: payment.citizen.userId,
+			action: AuditAction.PAYMENT_CANCELLED,
+			entityType: AuditEntity.PAYMENT,
+			entityId: payment.id,
+		});
+
 		return {
 			success: false,
 			statusCode: httpStatus.OK,
@@ -291,6 +316,13 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 				payload: query as unknown as Prisma.InputJsonValue,
 				note: "Payment failed at bKash checkout page",
 			},
+		});
+
+		await AuditLogService.createAuditLog({
+			actorId: payment.citizen.userId,
+			action: AuditAction.PAYMENT_FAILED,
+			entityType: AuditEntity.PAYMENT,
+			entityId: payment.id,
 		});
 
 		return {
@@ -443,6 +475,22 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 					paymentStatus: PaymentStatus.PAID,
 				},
 			});
+
+			await AuditLogService.createAuditLog(
+				{
+					actorId: payment.citizen.userId,
+					action: AuditAction.PAYMENT_SUCCESS,
+					entityType: AuditEntity.PAYMENT,
+					entityId: payment.id,
+					newValue: {
+						serviceRequestId: payment.serviceRequestId,
+						bkashTransactionId: executeRes.trxID,
+						amount: executeRes.amount,
+						paymentStatus: "PAID",
+					},
+				},
+				tx,
+			);
 
 			return updatedPayment;
 		});

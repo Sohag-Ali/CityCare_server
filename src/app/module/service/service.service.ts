@@ -1,7 +1,12 @@
 import httpStatus from "http-status";
-import { Prisma } from "../../../generated/prisma/client";
+import {
+	AuditAction,
+	AuditEntity,
+	Prisma,
+} from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { AuditLogService } from "../auditLog/auditLog.service";
 import type {
 	ICreateServicePayload,
 	IPaginationOptions,
@@ -9,7 +14,11 @@ import type {
 	IUpdateServicePayload,
 } from "./service.interface";
 
-const createService = async (payload: ICreateServicePayload) => {
+const createService = async (
+	payload: ICreateServicePayload,
+	authUserId?: string,
+	clientInfo?: { ipAddress?: string | null; userAgent?: string | null },
+) => {
 	// 1. Verify Category exists and inspect parent Department & Municipality
 	const category = await prisma.category.findFirst({
 		where: {
@@ -102,6 +111,22 @@ const createService = async (payload: ICreateServicePayload) => {
 			baseFee,
 			currency,
 		},
+	});
+
+	await AuditLogService.createAuditLog({
+		actorId: authUserId || null,
+		action: AuditAction.CREATE,
+		entityType: AuditEntity.MUNICIPAL_SERVICE,
+		entityId: result.id,
+		newValue: {
+			name: result.name,
+			code: result.code,
+			isPaid: result.isPaid,
+			baseFee: result.baseFee?.toString(),
+			currency: result.currency,
+		},
+		ipAddress: clientInfo?.ipAddress,
+		userAgent: clientInfo?.userAgent,
 	});
 
 	return result;
@@ -263,7 +288,12 @@ const getServiceById = async (id: string) => {
 	return service;
 };
 
-const updateService = async (id: string, payload: IUpdateServicePayload) => {
+const updateService = async (
+	id: string,
+	payload: IUpdateServicePayload,
+	authUserId?: string,
+	clientInfo?: { ipAddress?: string | null; userAgent?: string | null },
+) => {
 	const existingService = await prisma.municipalService.findFirst({
 		where: {
 			id,
@@ -367,10 +397,39 @@ const updateService = async (id: string, payload: IUpdateServicePayload) => {
 		data: updatedData,
 	});
 
+	await AuditLogService.createAuditLog({
+		actorId: authUserId || null,
+		action: AuditAction.UPDATE,
+		entityType: AuditEntity.MUNICIPAL_SERVICE,
+		entityId: result.id,
+		oldValue: {
+			name: existingService.name,
+			code: existingService.code,
+			isPaid: existingService.isPaid,
+			baseFee: existingService.baseFee
+				? existingService.baseFee.toString()
+				: null,
+			currency: existingService.currency,
+		},
+		newValue: {
+			name: result.name,
+			code: result.code,
+			isPaid: result.isPaid,
+			baseFee: result.baseFee ? result.baseFee.toString() : null,
+			currency: result.currency,
+		},
+		ipAddress: clientInfo?.ipAddress,
+		userAgent: clientInfo?.userAgent,
+	});
+
 	return result;
 };
 
-const deleteService = async (id: string) => {
+const deleteService = async (
+	id: string,
+	authUserId?: string,
+	clientInfo?: { ipAddress?: string | null; userAgent?: string | null },
+) => {
 	const existingService = await prisma.municipalService.findFirst({
 		where: {
 			id,
@@ -396,6 +455,17 @@ const deleteService = async (id: string) => {
 		data: {
 			isActive: false,
 		},
+	});
+
+	await AuditLogService.createAuditLog({
+		actorId: authUserId || null,
+		action: AuditAction.DELETE,
+		entityType: AuditEntity.MUNICIPAL_SERVICE,
+		entityId: result.id,
+		oldValue: { isActive: true },
+		newValue: { isActive: false },
+		ipAddress: clientInfo?.ipAddress,
+		userAgent: clientInfo?.userAgent,
 	});
 
 	return result;
