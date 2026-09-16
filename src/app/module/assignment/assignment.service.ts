@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import {
 	AssignmentStatus,
+	NotificationType,
 	type Prisma,
 	RequestStatus,
 	Role,
@@ -9,6 +10,7 @@ import {
 } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { NotificationService } from "../notification/notification.service";
 import { canRolePerformTransition } from "../serviceRequest/serviceRequest.stateMachine";
 import type {
 	IAcceptAssignmentPayload,
@@ -245,6 +247,18 @@ const assignTechnician = async (
 			assignment,
 			serviceRequest: updatedRequest,
 		};
+	});
+
+	// Dispatch Notification to assigned technician (after DB transaction commit)
+	await NotificationService.dispatchNotification({
+		userId: technician.user.id,
+		type: NotificationType.REQUEST_ASSIGNED,
+		title: "New Work Assignment",
+		message: `You have been assigned to service request ${serviceRequest.trackingNumber} (${serviceRequest.title}).`,
+		entityType: "SERVICE_REQUEST",
+		entityId: serviceRequest.id,
+		userName: technician.user.name,
+		userEmail: technician.user.email,
 	});
 
 	return result;

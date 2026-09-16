@@ -1,6 +1,7 @@
 import type { UploadApiResponse } from "cloudinary";
 import httpStatus from "http-status";
 import {
+	NotificationType,
 	PaymentStatus,
 	Prisma,
 	RequestStatus,
@@ -11,6 +12,7 @@ import {
 import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { NotificationService } from "../notification/notification.service";
 import { SlaService } from "../sla/sla.service";
 import type {
 	IAttachmentInput,
@@ -344,6 +346,18 @@ const createServiceRequest = async (
 		priority,
 		newRequest.createdAt,
 	);
+
+	// Dispatch notification to citizen (after DB transaction commit)
+	await NotificationService.dispatchNotification({
+		userId: citizen.userId,
+		type: NotificationType.REQUEST_SUBMITTED,
+		title: "Service Request Submitted",
+		message: `Your municipal request ${newRequest.trackingNumber} has been submitted successfully.`,
+		entityType: "SERVICE_REQUEST",
+		entityId: newRequest.id,
+		userName: newRequest.citizen.user.name,
+		userEmail: newRequest.citizen.user.email,
+	});
 
 	return {
 		...newRequest,

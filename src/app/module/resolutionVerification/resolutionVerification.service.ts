@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import {
 	AssignmentStatus,
+	NotificationType,
 	RequestStatus,
 	Role,
 	StaffType,
@@ -9,6 +10,7 @@ import {
 } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../utils/AppError";
+import { NotificationService } from "../notification/notification.service";
 import { canRolePerformTransition } from "../serviceRequest/serviceRequest.stateMachine";
 import type { IVerifyResolutionPayload } from "./resolutionVerification.interface";
 
@@ -68,6 +70,9 @@ const verifyResolution = async (
 	const serviceRequest = await prisma.serviceRequest.findFirst({
 		where: { id: requestId, isDeleted: false },
 		include: {
+			citizen: {
+				include: { user: true },
+			},
 			service: {
 				include: {
 					category: {
@@ -256,6 +261,22 @@ const verifyResolution = async (
 		},
 		{ timeout: 20000, maxWait: 10000 },
 	);
+
+	if (
+		payload.decision === VerificationDecision.APPROVED &&
+		serviceRequest.citizen
+	) {
+		await NotificationService.dispatchNotification({
+			userId: serviceRequest.citizen.userId,
+			type: NotificationType.REQUEST_RESOLVED,
+			title: "Service Request Resolved",
+			message: `Your service request ${serviceRequest.trackingNumber} has been verified and resolved.`,
+			entityType: "SERVICE_REQUEST",
+			entityId: serviceRequest.id,
+			userName: serviceRequest.citizen.user.name,
+			userEmail: serviceRequest.citizen.user.email,
+		});
+	}
 
 	return result;
 };

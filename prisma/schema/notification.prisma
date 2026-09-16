@@ -1,0 +1,49 @@
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  REQUEST_STATUS_CHANGED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  REQUEST_ASSIGNED
+  REQUEST_ACCEPTED
+  REQUEST_STARTED
+  RESOLUTION_SUBMITTED
+  RESOLUTION_REWORK_REQUIRED
+  REQUEST_RESOLVED
+  REQUEST_CLOSED
+  SLA_WARNING
+  SLA_BREACH
+  PAYMENT_INITIATED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  PAYMENT_CANCELLED
+  SYSTEM
+}
+
+model Notification {
+  id         String              @id @default(uuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  entityType String?
+  entityId   String?
+  channel    NotificationChannel @default(IN_APP)
+  isRead     Boolean             @default(false)
+  readAt     DateTime?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId], name: "idx_notification_userId")
+  @@index([userId, isRead], name: "idx_notification_user_isRead")
+  @@index([createdAt], name: "idx_notification_createdAt")
+  @@index([entityType, entityId], name: "idx_notification_entity")
+  @@map("notifications")
+}

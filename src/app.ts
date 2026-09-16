@@ -17,6 +17,7 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
 import { MunicipalityRoutes } from "./app/module/municipality/municipality.route";
+import { NotificationRoutes } from "./app/module/notification/notification.route";
 import { PaymentRoutes } from "./app/module/payment/payment.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
 import { ServiceRequestRoutes } from "./app/module/serviceRequest/serviceRequest.route";
@@ -56,6 +57,7 @@ app.use("/api/v1/assignments", AssignmentRoutes);
 app.use("/api/v1/sla-policies", SlaRoutes);
 app.use("/api/v1/payments", PaymentRoutes);
 app.use("/api/v1/audit-logs", AuditLogRoutes);
+app.use("/api/v1/notifications", NotificationRoutes);
 
 // app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
 
