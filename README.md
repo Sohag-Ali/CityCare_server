@@ -4,6 +4,9 @@ CityCare is an enterprise-grade, configurable digital municipal service and comp
 
 > [!NOTE]
 > CityCare is a configurable software system for digital civic service administration. It is designed for demonstration and architectural reference and is not an officially deployed government platform.
+- [LIVE LINK](https://city-care-beryl.vercel.app)
+
+
 
 ---
 
