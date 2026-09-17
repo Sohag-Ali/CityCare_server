@@ -10,7 +10,7 @@ const router = Router();
 
 router.post(
 	"/",
-	auth(Role.ADMIN, Role.SUPER_ADMIN),
+	auth(Role.ADMIN),
 	validateRequest(StaffValidation.createStaffSchema),
 	StaffController.createStaff,
 );
@@ -35,15 +35,11 @@ router.get(
 
 router.patch(
 	"/:id",
-	auth(Role.ADMIN, Role.SUPER_ADMIN),
+	auth(Role.ADMIN),
 	validateRequest(StaffValidation.updateStaffSchema),
 	StaffController.updateStaff,
 );
 
-router.delete(
-	"/:id",
-	auth(Role.ADMIN, Role.SUPER_ADMIN),
-	StaffController.deleteStaff,
-);
+router.delete("/:id", auth(Role.ADMIN), StaffController.deleteStaff);
 
 export const StaffRoutes = router;

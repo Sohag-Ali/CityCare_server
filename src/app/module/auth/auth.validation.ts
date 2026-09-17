@@ -65,6 +65,12 @@ const StaffActivationZodSchema = z.object({
 	password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
+const AdminActivationZodSchema = z.object({
+	email: z.string().email("Invalid email format"),
+	otp: z.string().length(6, "OTP must be 6 digits"),
+	password: z.string().min(6, "Password must be at least 6 characters long"),
+});
+
 export const AuthValidation = {
 	citizenRegisterSchema,
 	loginSchema,
@@ -73,4 +79,5 @@ export const AuthValidation = {
 	ResetPasswordZodSchema,
 	CitizenEmailVerifyZodSchema,
 	StaffActivationZodSchema,
+	AdminActivationZodSchema,
 };

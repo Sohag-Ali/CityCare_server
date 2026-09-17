@@ -1,0 +1,301 @@
+{
+	"info": {
+		"_postman_id": "c2f25a25-citycare-rbac-collection",
+		"name": "CityCare RBAC Hierarchy - Postman Collection",
+		"description": "Postman Collection for testing Super Admin -> Admin -> Staff RBAC Hierarchy.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "superAdminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Super Admin Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"superadmin1@gmail.com\",\n  \"password\": \"Super_admin@1\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Login as Super Admin to receive accessToken."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Super Admin Creates New Admin (SUPER_ADMIN Only)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{superAdminToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"New Municipal Admin\",\n  \"email\": \"newadmin@citycare.gov.bd\",\n  \"contactNumber\": \"01711223344\",\n  \"designation\": \"Assistant Municipal Officer\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/admins",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"admins"
+					]
+				},
+				"description": "Super Admin creates a new Admin user account. An OTP is sent to the admin email."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Activate Admin Account with OTP",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"newadmin@citycare.gov.bd\",\n  \"otp\": \"123456\",\n  \"password\": \"NewAdminPassword123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/activate-admin",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"activate-admin"
+					]
+				},
+				"description": "Admin activates account by submitting OTP received via email and setting their password."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Created Admin Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"newadmin@citycare.gov.bd\",\n  \"password\": \"NewAdminPassword123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Login as the newly activated Admin."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Admin Creates Staff (ADMIN Only)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{adminToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Field Inspector Rahim\",\n  \"email\": \"rahim.staff@citycare.gov.bd\",\n  \"employeeId\": \"EMP-2026-0099\",\n  \"departmentId\": \"DEPARTMENT_ID_HERE\",\n  \"staffType\": \"TECHNICIAN\",\n  \"designation\": \"Field Inspector\",\n  \"joiningDate\": \"2026-01-01T00:00:00.000Z\",\n  \"contactNumber\": \"01799887766\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/staff",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"staff"
+					]
+				},
+				"description": "Admin creates a new Staff member."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Public Citizen Registration (Strips Role Payload)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Public Citizen User\",\n  \"email\": \"citizen_public@example.com\",\n  \"password\": \"CitizenPassword123!\",\n  \"role\": \"SUPER_ADMIN\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"register"
+					]
+				},
+				"description": "Public registration ignores client-supplied 'role' and hardcodes role to CITIZEN."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Get All Admins (SUPER_ADMIN Only)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{superAdminToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/admins?page=1&limit=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"admins"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Super Admin gets list of all Admins."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Deactivate Admin Account (SUPER_ADMIN Only)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{superAdminToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/admin/admins/ADMIN_USER_ID_HERE/deactivate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"admin",
+						"admins",
+						"ADMIN_USER_ID_HERE",
+						"deactivate"
+					]
+				},
+				"description": "Super Admin deactivates an Admin account."
+			},
+			"response": []
+		}
+	]
+}

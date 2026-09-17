@@ -11,6 +11,7 @@ import config from "./app/config";
 import { getBkashIdToken } from "./app/lib/bkash";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
+import { AdminRoutes } from "./app/module/admin/admin.route";
 import { AssignmentRoutes } from "./app/module/assignment/assignment.route";
 import { AuditLogRoutes } from "./app/module/auditLog/auditLog.route";
 import { AuthRoutes } from "./app/module/auth/auth.route";
@@ -45,6 +46,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/v1/auth", AuthRoutes);
+app.use("/api/v1/admin", AdminRoutes);
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/municipalities", MunicipalityRoutes);
 app.use("/api/v1/zones", ZoneRoutes);

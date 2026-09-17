@@ -54,4 +54,10 @@ router.post(
 	AuthController.activateStaff,
 );
 
+router.post(
+	"/activate-admin",
+	validateRequest(AuthValidation.AdminActivationZodSchema),
+	AuthController.activateAdmin,
+);
+
 export const AuthRoutes = router;
