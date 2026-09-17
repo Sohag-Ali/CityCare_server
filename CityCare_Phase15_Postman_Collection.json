@@ -1,0 +1,403 @@
+{
+	"info": {
+		"_postman_id": "c1f15a15-citycare-phase15-report-collection",
+		"name": "CityCare Phase 15 - Reporting, Dashboard & Analytics",
+		"description": "Postman Collection for CityCare Phase 15 Reporting & Analytics APIs.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "YOUR_ADMIN_ACCESS_TOKEN_HERE",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "0. Admin Login (Get Token)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@citycare.gov.bd\",\n  \"password\": \"Admin123!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Login as Admin to retrieve JWT access token."
+			},
+			"response": []
+		},
+		{
+			"name": "1. Overview Dashboard",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/overview?from=2026-01-01&to=2026-12-31",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"overview"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "to",
+							"value": "2026-12-31"
+						}
+					]
+				},
+				"description": "Get high-level system dashboard overview metrics."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Request Statistics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests?from=2026-01-01&to=2026-12-31",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "2026-01-01"
+						},
+						{
+							"key": "to",
+							"value": "2026-12-31"
+						}
+					]
+				},
+				"description": "Get request metrics, status distribution, priority distribution, free vs paid breakdown, and average resolution time."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Category Analytics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests/by-category",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests",
+						"by-category"
+					]
+				},
+				"description": "Get category-wise request volume distribution."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Department Analytics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests/by-department",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests",
+						"by-department"
+					]
+				},
+				"description": "Get department-wise request status breakdown and SLA breach counts."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Ward Analytics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests/by-ward",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests",
+						"by-ward"
+					]
+				},
+				"description": "Get request distribution by Ward."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Zone Analytics",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests/by-zone",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests",
+						"by-zone"
+					]
+				},
+				"description": "Get request distribution by Zone."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Request Trends",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/requests/trends?groupBy=month",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"requests",
+						"trends"
+					],
+					"query": [
+						{
+							"key": "groupBy",
+							"value": "month"
+						}
+					]
+				},
+				"description": "Get periodic time-series request trends (groupBy=day|week|month)."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Staff Workload Report",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/staff-workload?page=1&limit=10",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"staff-workload"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Get operational staff performance and workload stats."
+			},
+			"response": []
+		},
+		{
+			"name": "9. SLA Performance Report",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/sla",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"sla"
+					]
+				},
+				"description": "Get SLA performance stats, breach percentages, and department-wise SLA performance."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Payment & Financial Report",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/reports/payments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"reports",
+						"payments"
+					]
+				},
+				"description": "Get payment metrics, total revenue, monthly payment trends, and paid service statistics."
+			},
+			"response": []
+		}
+	]
+}
