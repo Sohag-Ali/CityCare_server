@@ -1,42 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Staff Account Activation - CityCare</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
-        .header h1 { color: #1e3a8a; margin: 0; font-size: 24px; }
-        .info-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .otp-box { font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #2563eb; text-align: center; margin: 25px 0; padding: 15px; background: #eff6ff; border-radius: 6px; }
-        .footer { text-align: center; font-size: 12px; color: #6b7280; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 15px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Account Activation - CityCare</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>CityCare Municipal Platform</h1>
-        </div>
-        <p>Hello <strong><%= name %></strong>,</p>
-        <p>Your CityCare staff account has been created by the Municipal Administrator. Below are your official employment details:</p>
-        
-        <div class="info-box">
-            <p style="margin: 5px 0;"><strong>Employee ID:</strong> <%= employeeId %></p>
-            <p style="margin: 5px 0;"><strong>Department:</strong> <%= departmentName %></p>
-            <p style="margin: 5px 0;"><strong>Designation:</strong> <%= designation %></p>
-            <p style="margin: 5px 0;"><strong>Staff Type:</strong> <%= staffType %></p>
-        </div>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #334155; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px 32px 24px 32px; border-bottom: 1px solid #f1f5f9; text-align: left;">
+              <div style="font-size: 24px; font-weight: 700; color: #2563eb; letter-spacing: -0.5px;">CityCare</div>
+              <div style="font-size: 13px; font-weight: 500; color: #64748b; margin-top: 4px;">Digital Municipal Service &amp; Complaint Management Platform</div>
+            </td>
+          </tr>
 
-        <p>Please use the one-time activation OTP below to activate your account and create your password:</p>
-        
-        <div class="otp-box"><%= otp %></div>
-        
-        <p style="text-align: center; color: #ef4444; font-size: 14px;">This OTP is valid for <strong><%= expirationMinutes %> minutes</strong>. Do not share this OTP with anyone.</p>
+          <!-- Content -->
+          <tr>
+            <td style="padding: 32px;">
+              <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1e293b;">Your Staff Account Is Ready</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">
+                Hello <strong><%= name %></strong>,
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #334155;">
+                Your CityCare municipal staff account has been provisioned by an authorized administrator. Below are your official employment profile details:
+              </p>
 
-        <div class="footer">
-            <p>CityCare Municipal Service Platform &copy; 2026. All rights reserved.</p>
-        </div>
-    </div>
+              <!-- Employment Profile Card -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 20px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: #1e293b; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">Staff Details</div>
+                    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size: 14px;">
+                      <tr>
+                        <td style="padding: 4px 0; color: #64748b; width: 140px;">Employee ID:</td>
+                        <td style="padding: 4px 0; color: #1e293b; font-weight: 600;"><%= employeeId %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color: #64748b;">Department:</td>
+                        <td style="padding: 4px 0; color: #1e293b; font-weight: 600;"><%= departmentName %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color: #64748b;">Designation:</td>
+                        <td style="padding: 4px 0; color: #1e293b; font-weight: 600;"><%= designation %></td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color: #64748b;">Staff Type:</td>
+                        <td style="padding: 4px 0; color: #1e293b; font-weight: 600;"><%= staffType %></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">
+                Please complete your staff account activation and set your password using the verification code below:
+              </p>
+
+              <!-- OTP Box -->
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 24px 0;">
+                <tr>
+                  <td align="center" style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px;">
+                    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #0284c7; margin-bottom: 8px;">Activation Code</div>
+                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 700; color: #1d4ed8; letter-spacing: 8px;"><%= otp %></div>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #92400e; background-color: #fffbe0; border-left: 3px solid #d97706; padding: 10px 14px; border-radius: 0 4px 4px 0;">
+                This activation code is valid for <strong><%= expirationMinutes %> minutes</strong>.
+              </p>
+
+              <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #475569;">Security Policy:</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #64748b;">
+                  Do not share this activation code or your login credentials with anyone. After completing activation, you will be able to sign in to the CityCare staff portal.
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 24px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; line-height: 1.5; color: #64748b;">
+              <p style="margin: 0 0 8px 0;">Need help? Please contact your department administrator or the CityCare IT support team.</p>
+              <p style="margin: 0 0 12px 0;">This is an automated message from CityCare. Please do not reply directly to this message.</p>
+              <p style="margin: 0; font-weight: 500; color: #475569;">&copy; 2026 CityCare. Digital Municipal Service &amp; Complaint Management Platform. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
