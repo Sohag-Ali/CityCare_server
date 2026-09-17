@@ -1,0 +1,3029 @@
+{
+  "info": {
+    "_postman_id": "3499af43-e855-44ad-ab1d-b75347964423",
+    "name": "City Care",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54817904",
+    "_collection_link": "https://go.postman.co/collection/54817904-3499af43-e855-44ad-ab1d-b75347964423?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth - Google",
+      "item": [
+        {
+          "name": "Google Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();\n\npm.test(\"logs in with Google\", () => pm.response.to.have.status(200));\n\nif (res && res.data && res.data.accessToken) {\n    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);\n    pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken || \"\");\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"idToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6ImYxMGY4NzQwNWE5NzljMWRmMzZkZjI2NjA2NzM0ZjMzY2Q4NWMyNzEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0OTUzNzc4MDg5NTAtYTQ2bG9hbXBzcHNxZWdtaWhrZnJmY2wzdGczOG5kNzEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0OTUzNzc4MDg5NTAtYTQ2bG9hbXBzcHNxZWdtaWhrZnJmY2wzdGczOG5kNzEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTQ3NjEzNjMxNDk0MDM0NzM2OTgiLCJlbWFpbCI6InNvaGFnMjg3OUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzg5NjU4NDIyLCJuYW1lIjoiU29oYWciLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSm4xSk51enEyMC1mTUxYX09oOXRSbjRGZEJsaGFHeW5KYWF0akRXa24xR0l4QUZQcmw9czk2LWMiLCJnaXZlbl9uYW1lIjoiU29oYWciLCJpYXQiOjE3ODk2NTg3MjIsImV4cCI6MTc4OTY2MjMyMiwianRpIjoiMTA2MTQ5MGQ2OTE0MGQxYjVkYjAzMDA2OTBiMDkwYTIwNzkwMDYzYiJ9.12liStpv9OfMj_QHHoPRnDFFonwFp8Sr9dOaqybzkA2Hp8RybWDq6IROrpLNWueNAmSiVmymNzh-SFNZ3m1Npa9XbGMRWyL262iscMsXSQ_kGBSesSsxQKShteT_oMPcTf-M0_JyWCAYEBBFwObxrCVPl1dTSOQtqDCK22eCnk_SoP_H7kHYnEs_Ycr2MAMS5zLpanHcYl5QXp22UsmlwZJGEXBqNjDup1QTte_mOQbHhtta1rv6-4GdOo8OYZOj5gC32iyLshLQHj10jjGpi_lHhIiaztQhWzK7zmY6is1MUan2C7vS6xLCCY2CnAmQwbBxGcCwMtgHrxckOYOifg\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/google-login",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "google-login"
+              ]
+            },
+            "description": "Expected: 200, returning the application's own `accessToken` / `refreshToken` (both in the body and as cookies).\n\nThree resolution paths, in order:\n1. **Known `googleId`** — resolved by the stable `sub` claim, never by email, because a Google email can change and `sub` cannot.\n2. **Matching email on an existing account** — links it: sets `googleId`, forces `emailVerified: true`, and flips `authProvider` to `GOOGLE` *only* if the account had no password. An existing password is preserved. Role and status always come from the database, never from Google.\n3. **New email** — provisions `User` (`role: PATIENT`, `password: null`, `authProvider: GOOGLE`, `emailVerified: true`, `image` from the `picture` claim) plus its `Patient` row in one transaction.\n\nAccount standing is checked on every path, including before the link-write, so a blocked or deleted account is refused without being mutated."
+          },
+          "response": []
+        }
+      ],
+      "description": "ID-token verification only. The frontend runs Google Sign-In, gets an ID token, and POSTs it here; the server verifies it against `GOOGLE_CLIENT_ID` and then issues **its own** JWTs. Google is never involved again after this one call — no client secret, no callback/redirect URL, no stored Google session.\n\nSee `GOOGLE-LOGIN-TESTING.md` in the repo for how to obtain a real ID token for the `googleIdToken` variable."
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();\n\npm.test(\"registers with 201\", () => pm.response.to.have.status(201));\n\nif (res && res.data && res.data.accessToken) {\n    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);\n    pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken || \"\");\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\n// Citizen\n{\n    \"name\": \"Sumi\",\n    \"email\": \"sumikhatun1290@gmail.com\",\n    \"password\": \"Sohag@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/register",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Expected: **201**. In one Prisma transaction this creates a `User` (`role: PATIENT`, `status: ACTIVE`, `emailVerified: false`, `authProvider: CREDENTIALS`, bcrypt-hashed password) and its matching `Patient` row.\n\nReturns `data: { accessToken, refreshToken, user, patient }`, and also sets both tokens as cookies. The test script stores the tokens in collection variables for the protected requests below.\n\nThere is no email verification step — the OTP/verify-email/forget-password/reset-password flows went away with better-auth."
+          },
+          "response": []
+        },
+        {
+          "name": "Credential Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();\n\npm.test(\"logs in with 200\", () => pm.response.to.have.status(200));\n\nif (res && res.data && res.data.accessToken) {\n    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);\n    pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken || \"\");\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\n// Citizen\n{\n  \"email\": \"sohag.ali.dev@gmail.com\",\n  \"password\": \"Sohag@123456\"\n}\n\n// {\n//     \"email\": \"sohag2879@gmail.com\",\n//     \"password\": \"Sohag@123\"\n// }\n\n// Super Admin\n// {\n//   \"email\": \"superadmin1@gmail.com\",\n//   \"password\": \"Super_admin@1\"\n// }\n\n// Admin\n// {\n//   \"email\": \"testeradmin1@gmail.com\",\n//   \"password\": \"Tester_admin@1\"\n// }\n\n//    Manager\n// {\n//   \"email\": \"ali22205101426@diu.edu.bd\",\n//   \"password\": \"Sohag@123456\"\n// }\n// Tech\n// {\n//   \"email\": \"sohag1552726@gmail.com\",\n//   \"password\": \"Sohag@123456\"\n// }\n//officer\n// {\n//   \"email\": \"sohagali1234hot@gmail.com\",\n//   \"password\": \"Sohag@123456\"\n// }\n\n\n\n\n\n\n\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/login",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Expected: 200 with `data: { accessToken, refreshToken, user }`.\n\nOther outcomes from `AuthService.loginUser`:\n- unknown email → 404 \"User not found\"\n- `status: BLOCKED` → 403 \"User is blocked\"\n- `isDeleted` or `status: DELETED` → 404 \"User is deleted\"\n- account with no password (Google-only sign-in) → 400 \"This account uses Google sign-in. Please continue with Google.\"\n- wrong password → 401 \"Invalid credentials\""
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n     \"email\": \"sumikhatun1290@gmail.com\",\r\n    \"password\": \"Sohag@123s\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/forgot-password",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"sumikhatun1290@gmail.com\",\r\n    \"newPassword\": \"Sohag@123456\",\r\n    \"otp\": \"938415\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/reset-password",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \r\n    \"email\": \"sumikhatun1290@gmail.com\",\r\n    \"otp\":\"124254\"\r\n    \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/verify-email",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify-email"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/me",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "All seven endpoints under `/api/v1/auth`. Protected routes (`/me`, `/change-password`, `/logout`) are gated by `checkAuth(ADMIN, DOCTOR, PATIENT, SUPER_ADMIN)` — every role passes, so the gate is really just \"authenticated\"."
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Update-Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "",
+                  "type": "file",
+                  "src": [],
+                  "disabled": true
+                },
+                {
+                  "key": "profileImage",
+                  "type": "file",
+                  "src": [
+                    "/E:/Pictures/sohag/sohg.jpg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/user/profile-image",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "user",
+                "profile-image"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Municipality",
+      "item": [
+        {
+          "name": "Create Municipality",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Rajshahi North City Corporation\",\r\n  \"code\": \"RNCC\",\r\n  \"country\": \"Bangladesh\",\r\n  \"timezone\": \"Asia/Dhaka\",\r\n  \"currency\": \"BDT\",\r\n  \"contactEmail\": \"info@rncc.gov.bd\",\r\n  \"contactPhone\": \"+8801700000000\",\r\n  \"logoUrl\": \"https://example.com/logo.png\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/municipalities",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "municipalities"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Municipalities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/municipalities",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "municipalities"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Municipality by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/municipalities/3bce0ecc-2918-40c7-9d72-9e489eaa2525",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "municipalities",
+                "3bce0ecc-2918-40c7-9d72-9e489eaa2525"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Municipality",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Dhaka North City Corporation (Updated)\",\r\n  \"contactPhone\": \"+8801728918054\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/municipalities/3bce0ecc-2918-40c7-9d72-9e489eaa2525",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "municipalities",
+                "3bce0ecc-2918-40c7-9d72-9e489eaa2525"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete (Soft Delete) Municipality",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/municipalities/4384a8d2-ae06-4c92-aceb-b42c0a2f9156b",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "municipalities",
+                "4384a8d2-ae06-4c92-aceb-b42c0a2f9156b"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Zone",
+      "item": [
+        {
+          "name": "Get All Zone",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/zones?page=1&limit=10&municipalityId=3bce0ecc-2918-40c7-9d72-9e489eaa2525",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "zones"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "Gulshan",
+                  "disabled": true
+                },
+                {
+                  "key": "municipalityId",
+                  "value": "3bce0ecc-2918-40c7-9d72-9e489eaa2525"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Zone By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/zones/02cfa207-18ac-474d-b899-6aa426d24720",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "zones",
+                "02cfa207-18ac-474d-b899-6aa426d24720"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Zone",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Uttara Zone\",\r\n  \"description\": \"commercial & residential Area\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/zones/02cfa207-18ac-474d-b899-6aa426d24720",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "zones",
+                "02cfa207-18ac-474d-b899-6aa426d24720"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Zone (Soft Delete Zone)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/zones/02cfa207-18ac-474d-b899-6aa426d24720",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "zones",
+                "02cfa207-18ac-474d-b899-6aa426d24720"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Zone",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"municipalityId\": \"3bce0ecc-2918-40c7-9d72-9e489eaa2525\",\r\n  \"name\": \"Gulshan & Banani Zone\",\r\n  \"code\": \"ZONE-03\",\r\n  \"description\": \"Commercial and upscale residential area\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/zones",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "zones"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ward",
+      "item": [
+        {
+          "name": "Create Ward",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"municipalityId\": \"3bce0ecc-2918-40c7-9d72-9e489eaa2525\",\r\n  \"zoneId\": \"3a65fcc5-d103-4fc7-88e4-b08a6edacd6d\",\r\n  \"name\": \"Mirpur 1,2,3,4,5\",\r\n  \"code\": \"WARD-5\",\r\n  \"wardNumber\": 5,\r\n  \"description\": \"Residential Ward Number 19\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/wards",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "wards"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Wards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/wards?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "wards"
+              ],
+              "query": [
+                {
+                  "key": "municipalityId",
+                  "value": "3bce0ecc-2918-40c7-9d72-9e489eaa2525",
+                  "disabled": true
+                },
+                {
+                  "key": "zoneId",
+                  "value": "3a65fcc5-d103-4fc7-88e4-b08a6edacd6d",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Ward by Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/wards/9e5f62dd-d940-488d-878c-4a462b690824",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "wards",
+                "9e5f62dd-d940-488d-878c-4a462b690824"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Ward",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Niketan Ward North\",\r\n  \"description\": \"Updated Niketan ward info\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/wards/9e5f62dd-d940-488d-878c-4a462b690824",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "wards",
+                "9e5f62dd-d940-488d-878c-4a462b690824"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deleted Ward",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/wards/9e5f62dd-d940-488d-878c-4a462b690824",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "wards",
+                "9e5f62dd-d940-488d-878c-4a462b690824"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Department Endpoints",
+      "item": [
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"municipalityId\": \"3bce0ecc-2918-40c7-9d72-9e489eaa2525\",\r\n  \"name\": \"Roads and Transport Department\",\r\n  \"code\": \"RTD\",\r\n  \"description\": \"Responsible for public health services, mosquito control, and food safety\",\r\n  \"email\": \"rtd@dncc.gov.bd\",\r\n  \"phone\": \"+8801722222222\"\r\n}\r\n\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/departments",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all Depertment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/departments?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ],
+              "query": [
+                {
+                  "key": "municipalityId",
+                  "value": "3bce0ecc-2918-40c7-9d72-9e489eaa2525",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "WASTE",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Department By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/departments/e30b9114-63be-40cd-a8c3-2329fb5b5e68",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "e30b9114-63be-40cd-a8c3-2329fb5b5e68"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update depertment",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Waste Management & Environmental Protection Department\",\r\n  \"email\": \"env-waste@dncc.gov.bd\",\r\n  \"phone\": \"+8801799999999\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/departments/e30b9114-63be-40cd-a8c3-2329fb5b5e68",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "e30b9114-63be-40cd-a8c3-2329fb5b5e68"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Department",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/departments/e30b9114-63be-40cd-a8c3-2329fb5b5e68",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                "e30b9114-63be-40cd-a8c3-2329fb5b5e68"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "Admin Staff Account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"sohag\",\r\n  \"email\": \"sohagali1234hot@gmail.com\",\r\n  \"departmentId\": \"50ae023e-f221-42fc-b7ca-fcc6efe5c40d\",\r\n  \"staffType\": \"OFFICER\",\r\n  \"employeeId\": \"EMP-00101\",\r\n  \"designation\": \"OFFICER Field\",\r\n  \"joiningDate\": \"2026-09-15\",\r\n  \"contactNumber\": \"+8801700000000\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Account activated",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"sohagali1234hot@gmail.com\",\r\n  \"otp\": \"741769\",\r\n  \"password\": \"Sohag@123456\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/staff/activate",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "staff",
+                "activate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Staff",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff"
+              ],
+              "query": [
+                {
+                  "key": "departmentId",
+                  "value": "08bb9c55-b0f4-40b5-b144-a7102977ad8c",
+                  "disabled": true
+                },
+                {
+                  "key": "staffType",
+                  "value": "TECHNICIAN",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Staff By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff/4bb862fa-7658-4b97-b5bb-388d81c196ef",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff",
+                "4bb862fa-7658-4b97-b5bb-388d81c196ef"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Staff",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"staffType\": \"MANAGER\",\r\n  \"designation\": \"Chief Field Manager\",\r\n  \"contactNumber\": \"+8801728918054\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff/4bb862fa-7658-4b97-b5bb-388d81c196ef",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff",
+                "4bb862fa-7658-4b97-b5bb-388d81c196ef"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff/c0740129-b683-4191-8afb-689e3e3c493e",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff",
+                "c0740129-b683-4191-8afb-689e3e3c493e"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Category Management APIs",
+      "item": [
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"departmentId\": \"50ae023e-f221-42fc-b7ca-fcc6efe5c40d\",\r\n  \"name\": \"Road Damage\",\r\n  \"code\": \"Road-Damage\",\r\n  \"description\": \"General municipal Road Damage services and complaint handling\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/categories",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/categories?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "waste",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/categories/59fd9139-29ef-4db9-8ac1-c7929c2c236c",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "59fd9139-29ef-4db9-8ac1-c7929c2c236c"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Solid Waste Collection\",\r\n  \"description\": \"Updated waste management services category description\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/categories/59fd9139-29ef-4db9-8ac1-c7929c2c236c",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "59fd9139-29ef-4db9-8ac1-c7929c2c236c"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deleted Categories",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/categories/59fd9139-29ef-4db9-8ac1-c7929c2c236c",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "59fd9139-29ef-4db9-8ac1-c7929c2c236c"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Municipal Service Management APIs",
+      "item": [
+        {
+          "name": "Create Free Municipal Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"categoryId\": \"59fd9139-29ef-4db9-8ac1-c7929c2c236c\",\r\n  \"name\": \"Road Damage\",\r\n  \"code\": \"RD\",\r\n  \"description\": \"Daily residential Road Damage service\",\r\n  \"isPaid\": false\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Paid Municipal Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"categoryId\": \"5c3028c4-0a57-48ce-b471-267690507053\",\r\n  \"name\": \"House Waste Removal\",\r\n  \"code\": \"HOUSE-WASTE\",\r\n  \"description\": \"Special collection for large construction or bulk debris waste\",\r\n  \"isPaid\": true,\r\n  \"baseFee\": 100,\r\n  \"currency\": \"BDT\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Municipal Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services"
+              ],
+              "query": [
+                {
+                  "key": "isPaid",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Municipal Service Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services/9f21b736-ec55-49d0-8a8d-a49db033d351",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services",
+                "9f21b736-ec55-49d0-8a8d-a49db033d351"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Municipal Service",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"isPaid\": true,\r\n  \"baseFee\": 2000,\r\n  \"currency\": \"BDT\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services/9f21b736-ec55-49d0-8a8d-a49db033d351",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services",
+                "9f21b736-ec55-49d0-8a8d-a49db033d351"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate Service (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/services/9f21b736-ec55-49d0-8a8d-a49db033d351",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "services",
+                "9f21b736-ec55-49d0-8a8d-a49db033d351"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Service Request",
+      "item": [
+        {
+          "name": "Civic Complaint",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/E:/Pictures/sohag/[000529].jpg"
+                  ]
+                },
+                {
+                  "key": "data",
+                  "value": "{\n  \"serviceId\": \"4a909f6e-da84-46fa-a6f4-2f48302897a5\",\n  \"title\": \"Large pothole blocking main street\",\n  \"description\": \"There is a severe pothole causing heavy traffic jam and vehicle damage.\",\n  \"priority\": \"HIGH\",\n  \"location\": {\n    \"wardId\": \"68fb3bf0-a337-4ff3-a41e-74cdc4a58604\",\n    \"address\": \"House 12, Road 4, Sector 12\",\n    \"area\": \"Uttara\",\n    \"latitude\": 23.8103,\n    \"longitude\": 90.4125\n  }\n}\n",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/v1/service-requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "v1",
+                "service-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Own Service Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/my?page=1&limit=10&status=SUBMITTED",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "my"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "SUBMITTED"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Specific Request Traking number serach",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/CC-2026-000002",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "CC-2026-000002"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Request",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Updated: Deep pothole near sector 3\",\r\n  \"description\": \"Adding extra details about the location for city corporation team.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/d92b7a2d-c49e-4c46-90bb-74fbb97c4040",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "d92b7a2d-c49e-4c46-90bb-74fbb97c4040"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deleted Service Request",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/d92b7a2d-c49e-4c46-90bb-74fbb97c4040",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "d92b7a2d-c49e-4c46-90bb-74fbb97c4040"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Get All Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/v1/service-requests",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "v1",
+                "service-requests"
+              ],
+              "query": [
+                {
+                  "key": "isPaid",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "HIGH",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Service Status",
+      "item": [
+        {
+          "name": "Under Review | Manager OR Officer",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"status\": \"APPROVED\",\r\n  \"note\": \"Complaint received and sent for technical inspection.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/status",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Status History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/history",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "history"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Technicians Assingment",
+      "item": [
+        {
+          "name": "Get All Technicians",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/staff/technicians",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "staff",
+                "technicians"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Technicians Assing",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"technicianId\": \"093a629e-f9a6-4366-a7e6-d2a2bcef9f9d\",\r\n  \"note\": \"Assigned for immediate field inspection and drain clearance.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/assign",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "assign"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assing Techicians see her work",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/assignments/my",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "assignments",
+                "my"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assing work accept",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"note\": \"Work order accepted. Moving to site with clearing equipment.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/assignments/b342259a-c433-43a3-b94f-b72c2dc1d0c8/accept",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "assignments",
+                "b342259a-c433-43a3-b94f-b72c2dc1d0c8",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start Work",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"note\": \"Commenced repair work on site\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/start",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "start"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Progress Update",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"message\": \"Initial site inspection completed and excavation started.\",\r\n  \"progressPercentage\": 40\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/updates",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "updates"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evidence Upload",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "evidenceType",
+                  "value": "PROGRESS",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/E:/Pictures/sohag/IMG_0814.JPG"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/evidence",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "evidence"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolution Submit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"summary\": \"Road pothole repaired\",\r\n  \"details\": \"The damaged road section was excavated, refilled with sub-base materials, and newly paved with asphalt.\",\r\n  \"evidenceType\": \"AFTER\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/resolution",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "resolution"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolution Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/resolution",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "resolution"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get sla",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/sla",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "sla"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get update",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/updates",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "updates"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SLA Policy",
+      "item": [
+        {
+          "name": "Create SLP by Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"priority\": \"HIGH\",\r\n  \"responseTimeMinutes\": 60,\r\n  \"resolutionTimeMinutes\": 240,\r\n  \"isActive\": true\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/sla-policies",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sla-policies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get SLA Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/sla-policies",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sla-policies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updase sla",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"priority\": \"HIGH\",\r\n  \"responseTimeMinutes\": 50,\r\n  \"resolutionTimeMinutes\": 240\r\n\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/sla-policies/42d9bfdb-8d22-411c-a634-0167e035fd94",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sla-policies",
+                "42d9bfdb-8d22-411c-a634-0167e035fd94"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify work Copy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"decision\": \"APPROVED\",\r\n  \"comments\": \"Asphalt surface layer is uneven at edges. Needs smooth rolling.\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/verify",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "verify"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "SLA check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/<SERVICE_REQUEST_ID>/sla",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "<SERVICE_REQUEST_ID>",
+                "sla"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Attachments",
+      "item": [
+        {
+          "name": "Picture Attachments",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/E:/Pictures/sohag/sohg.jpg"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/attachments",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "attachments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get picture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/e17c7563-dc89-425f-8865-cfcb5efdd9bf/attachments",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "e17c7563-dc89-425f-8865-cfcb5efdd9bf",
+                "attachments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete picture",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/service-requests/<SERVICE_REQUEST_ID>/attachments/2224ac52-01cf-4d8e-b2ae-1531e2ca14ec",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-requests",
+                "<SERVICE_REQUEST_ID>",
+                "attachments",
+                "2224ac52-01cf-4d8e-b2ae-1531e2ca14ec"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "item": [
+        {
+          "name": "Initiate Payment for a Paid Service Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"serviceRequestId\": \"045f09c5-2e44-446e-af50-6da2f63e4612\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/payments/initiate",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "initiate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "",
+              "query": [
+                {
+                  "key": "paymentID",
+                  "value": "TR00115aX7B8M1718000000",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "success",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Citizen's Payment History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/payments/my?page=1&limit=10&status=SUCCESS",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "my"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "SUCCESS"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get by idS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/payments/81bd4a3e-640c-4a90-8b38-0e6ba56fda17",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "81bd4a3e-640c-4a90-8b38-0e6ba56fda17"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "Get All Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/audit-logs?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Audit Logs by Action & Entity Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "api/v1/audit-logs?action=UPDATE&entityType=MUNICIPAL_SERVICE",
+              "host": [
+                "api"
+              ],
+              "path": [
+                "v1",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "action",
+                  "value": "UPDATE"
+                },
+                {
+                  "key": "entityType",
+                  "value": "MUNICIPAL_SERVICE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Audit Log Details by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/audit-logs/3ba7afd8-575f-4a55-af5e-dfe68590c29f",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-logs",
+                "3ba7afd8-575f-4a55-af5e-dfe68590c29f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update audit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/audit-logs/3ba7afd8-575f-4a55-af5e-dfe68590c29f",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-logs",
+                "3ba7afd8-575f-4a55-af5e-dfe68590c29f"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notification",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/notifications?page=1&limit=10&isRead=false",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "isRead",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Notifications Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/notifications/unread-count",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "unread-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Single Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/notifications/ntf-1001-2002-3003/read",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "ntf-1001-2002-3003",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/notifications/read-all",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "read-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Report & Analysis",
+      "item": [
+        {
+          "name": "Overview Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/overview",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "overview"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests?from=2026-01-01&to=2026-12-31&status=IN_PROGRESS",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-12-31"
+                },
+                {
+                  "key": "status",
+                  "value": "IN_PROGRESS"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Category Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests/by-category",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests",
+                "by-category"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Department Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests/by-department",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests",
+                "by-department"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ward Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests/by-ward",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests",
+                "by-ward"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Zone Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests/by-zone",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests",
+                "by-zone"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Trend Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/requests/trends?groupBy=month",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "requests",
+                "trends"
+              ],
+              "query": [
+                {
+                  "key": "groupBy",
+                  "value": "month"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Staff Workload Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/staff-workload?page=1&limit=10",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "staff-workload"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "SLA Performance Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/sla",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "sla"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Payment & Financial Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/reports/payments",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "payments"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Create",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Arif Ahmed\",\r\n  \"email\": \"arif.admin@citycare.gov.bd\",\r\n  \"contactNumber\": \"01711223344\",\r\n  \"designation\": \"Assistant Municipal Officer\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/admin/admins",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "admins"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Account Activation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"arif.admin@citycare.gov.bd\",\r\n  \"otp\": \"326474\",\r\n  \"password\": \"NewAdminPassword123!\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://city-care-beryl.vercel.app/api/v1/auth/activate-admin",
+              "protocol": "https",
+              "host": [
+                "city-care-beryl",
+                "vercel",
+                "app"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "activate-admin"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    }
+  ]
+}

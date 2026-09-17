@@ -1,4 +1,6 @@
+import httpStatus from "http-status";
 import config from "../config";
+import { AppError } from "../utils/AppError";
 import { redisClient } from "./redis";
 
 export const getBkashIdToken = async () => {
@@ -12,16 +14,6 @@ export const getBkashIdToken = async () => {
 		const bkashRefreshToken = await redisClient.get(RefreshTokenKey);
 		const bkashRefreshTokenTTL = await redisClient.ttl(RefreshTokenKey);
 
-		// console.log({
-		//     bkashIdToken,
-		//     bkashIdTokenTTL,
-		//     bkashRefreshToken,
-		//     bkashRefreshTokenTTL
-		// });
-
-		//bkash id token remaining time is less than equal 10 minutes or bkash id is expired
-		// bkash refresh token must exist
-		// bkash refresh token remaining time is more than 10 minutes
 		if (
 			(bkashIdTokenTTL <= 600 || !bkashIdToken) &&
 			bkashRefreshToken &&
@@ -45,7 +37,10 @@ export const getBkashIdToken = async () => {
 				},
 			);
 			if (!refreshTokenResponse.ok) {
-				throw new Error("Bkash Access Token Grant Failed");
+				throw new AppError(
+					httpStatus.BAD_GATEWAY,
+					"Bkash Access Token Grant Failed",
+				);
 			}
 
 			const bkashRefreshTokenResult = await refreshTokenResponse.json();
@@ -84,7 +79,10 @@ export const getBkashIdToken = async () => {
 		);
 
 		if (!response.ok) {
-			throw new Error("Bkash Access Token Grant Failed");
+			throw new AppError(
+				httpStatus.BAD_GATEWAY,
+				"Bkash Access Token Grant Failed",
+			);
 		}
 
 		const result = await response.json();
@@ -109,7 +107,13 @@ export const getBkashIdToken = async () => {
 
 		return bkashIdToken;
 	} catch (error: any) {
-		throw new Error(error.message);
+		if (error instanceof AppError) {
+			throw error;
+		}
+		throw new AppError(
+			httpStatus.BAD_GATEWAY,
+			error.message || "Bkash Access Token Grant Failed",
+		);
 	}
 };
 
@@ -173,7 +177,10 @@ export const createBkashPayment = async (
 ): Promise<IBkashCreatePaymentResponse> => {
 	const idToken = await getBkashIdToken();
 	if (!idToken) {
-		throw new Error("Failed to obtain bKash ID token");
+		throw new AppError(
+			httpStatus.BAD_GATEWAY,
+			"Failed to obtain bKash ID token",
+		);
 	}
 
 	const response = await fetch(
@@ -200,7 +207,10 @@ export const createBkashPayment = async (
 
 	if (!response.ok) {
 		const errText = await response.text();
-		throw new Error(`bKash Create Payment Failed: ${errText}`);
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`bKash Create Payment Failed: ${errText}`,
+		);
 	}
 
 	const data: IBkashCreatePaymentResponse = await response.json();
@@ -212,7 +222,10 @@ export const executeBkashPayment = async (
 ): Promise<IBkashExecutePaymentResponse> => {
 	const idToken = await getBkashIdToken();
 	if (!idToken) {
-		throw new Error("Failed to obtain bKash ID token");
+		throw new AppError(
+			httpStatus.BAD_GATEWAY,
+			"Failed to obtain bKash ID token",
+		);
 	}
 
 	const response = await fetch(
@@ -233,7 +246,10 @@ export const executeBkashPayment = async (
 
 	if (!response.ok) {
 		const errText = await response.text();
-		throw new Error(`bKash Execute Payment Failed: ${errText}`);
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`bKash Execute Payment Failed: ${errText}`,
+		);
 	}
 
 	const data: IBkashExecutePaymentResponse = await response.json();
@@ -245,7 +261,10 @@ export const queryBkashPayment = async (
 ): Promise<IBkashQueryPaymentResponse> => {
 	const idToken = await getBkashIdToken();
 	if (!idToken) {
-		throw new Error("Failed to obtain bKash ID token");
+		throw new AppError(
+			httpStatus.BAD_GATEWAY,
+			"Failed to obtain bKash ID token",
+		);
 	}
 
 	const response = await fetch(
@@ -266,7 +285,10 @@ export const queryBkashPayment = async (
 
 	if (!response.ok) {
 		const errText = await response.text();
-		throw new Error(`bKash Query Payment Failed: ${errText}`);
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`bKash Query Payment Failed: ${errText}`,
+		);
 	}
 
 	const data: IBkashQueryPaymentResponse = await response.json();

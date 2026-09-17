@@ -29,7 +29,12 @@ const uploadToCloudinary = (buffer: Buffer): Promise<UploadApiResponse> => {
 				(error, result) => {
 					if (error) return reject(error);
 					if (!result)
-						return reject(new Error("No result returned from Cloudinary"));
+						return reject(
+							new AppError(
+								httpStatus.INTERNAL_SERVER_ERROR,
+								"No result returned from Cloudinary",
+							),
+						);
 					resolve(result);
 				},
 			)
