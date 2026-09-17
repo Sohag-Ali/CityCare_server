@@ -57,20 +57,20 @@ router.get(
 	auth(Role.ADMIN, Role.SUPER_ADMIN),
 	ServiceRequestController.getAllServiceRequests,
 );
-
+//Done
 router.post(
 	"/:id/assign",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
 	validateRequest(AssignmentValidation.assignTechnicianZodSchema),
 	AssignmentController.assignTechnician,
 );
-
+//Done
 router.patch(
 	"/:id/start",
 	auth(Role.STAFF),
 	TechnicianWorkController.startWork,
 );
-
+//done
 router.post(
 	"/:id/updates",
 	auth(Role.STAFF),
@@ -79,13 +79,13 @@ router.post(
 	validateRequest(TechnicianWorkValidation.createTechnicianUpdateZodSchema),
 	TechnicianWorkController.createTechnicianUpdate,
 );
-
+//done
 router.get(
 	"/:id/updates",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	TechnicianWorkController.getTechnicianUpdates,
 );
-
+//done
 router.post(
 	"/:id/resolution",
 	auth(Role.STAFF),
@@ -94,13 +94,13 @@ router.post(
 	validateRequest(TechnicianWorkValidation.submitResolutionZodSchema),
 	TechnicianWorkController.submitResolution,
 );
-
+//done
 router.get(
 	"/:id/resolution",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	TechnicianWorkController.getResolution,
 );
-
+//done
 router.post(
 	"/:id/attachments",
 	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
@@ -109,33 +109,33 @@ router.post(
 	validateRequest(AttachmentValidation.uploadAttachmentZodSchema),
 	AttachmentController.uploadAttachments,
 );
-
+//done
 router.get(
 	"/:id/attachments",
 	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
 	AttachmentController.getRequestAttachments,
 );
-
+//done
 router.delete(
 	"/:id/attachments/:attachmentId",
 	auth(Role.CITIZEN, Role.STAFF, Role.ADMIN, Role.SUPER_ADMIN),
 	AttachmentController.deleteAttachment,
 );
-
+//done
 router.post(
 	"/:id/evidence",
 	auth(Role.STAFF),
 	upload.array("files", 5),
 	TechnicianWorkController.uploadEvidence,
 );
-
+//done
 router.post(
 	"/:id/verify",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
 	validateRequest(ResolutionVerificationValidation.verifyResolutionZodSchema),
 	ResolutionVerificationController.verifyResolution,
 );
-
+//done
 router.get(
 	"/:id/sla",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),

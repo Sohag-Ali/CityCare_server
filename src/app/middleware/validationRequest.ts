@@ -1,23 +1,39 @@
 import { NextFunction, Request, Response } from "express";
+import httpStatus from "http-status";
 import z from "zod";
+import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 
-export const validateRequest = (zodSchema: z.ZodObject) => {
+export const validateRequest = (zodSchema: z.ZodTypeAny) => {
 	return catchAsync((req: Request, res: Response, next: NextFunction) => {
-		// const payload = req.body ? req.body : {}
 		const payload = req.body ?? {};
 
-		const result = zodSchema.safeParse(payload);
+		let target = payload;
 
-		if (!result.success) {
-			console.log(result.error);
-			console.log(result.error.issues);
-
-			throw new Error(result.error.issues[0].message);
+		if (
+			zodSchema instanceof z.ZodObject &&
+			"body" in zodSchema.shape &&
+			!("body" in payload)
+		) {
+			target = { body: payload };
 		}
 
-		req.body = result.data;
+		const result = zodSchema.safeParse(target);
+
+		if (!result.success) {
+			const firstIssue = result.error.issues[0];
+			const message = firstIssue ? firstIssue.message : "Validation Error";
+			throw new AppError(httpStatus.BAD_REQUEST, message);
+		}
+
+		const data = result.data;
+		if (data && typeof data === "object" && "body" in data) {
+			req.body = data.body;
+		} else {
+			req.body = data;
+		}
 
 		next();
 	});
 };
+
