@@ -1,3 +1,0 @@
--- AlterEnum
-ALTER TYPE "EvidenceType" ADD VALUE 'COMPLAINT';
-ALTER TYPE "EvidenceType" ADD VALUE 'RESOLUTION';
