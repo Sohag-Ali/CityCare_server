@@ -494,7 +494,7 @@ Create a `.env` file in the root directory following `.env.example`:
 | `BKASH_PASSWORD` | bKash Merchant Password | `sandboxPassword` |
 | `BKASH_APP_KEY` | bKash App Key | `sandboxAppKey` |
 | `BKASH_APP_SECRET` | bKash App Secret | `sandboxAppSecret` |
-| `BKASH_CALLBACK_URL` | bKash Callback Endpoint | `http://localhost:5000/api/v1` |
+| `BKASH_CALLBACK_URL` | bKash Callback Endpoint | `http://localhost:5000/api/v1/payments/bkash/callback` |
 
 ---
 

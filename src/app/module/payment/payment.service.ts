@@ -231,7 +231,8 @@ const initiatePayment = async (
 
 const handleBkashCallback = async (query: Record<string, any>) => {
 	const paymentID = (query.paymentID || query.paymentId) as string;
-	const status = query.status as string;
+	const rawStatus = (query.status as string) || "";
+	const status = rawStatus.toLowerCase();
 
 	if (!paymentID) {
 		throw new AppError(
@@ -264,7 +265,7 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 	}
 
 	// 3. Handle Cancelled callback from bKash
-	if (status === "cancel") {
+	if (status === "cancel" || status === "cancelled") {
 		const updated = await prisma.payment.update({
 			where: { id: payment.id },
 			data: {
@@ -299,7 +300,7 @@ const handleBkashCallback = async (query: Record<string, any>) => {
 	}
 
 	// 4. Handle Failed callback from bKash
-	if (status === "failure") {
+	if (status === "failure" || status === "failed") {
 		const updated = await prisma.payment.update({
 			where: { id: payment.id },
 			data: {
