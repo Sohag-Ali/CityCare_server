@@ -36,7 +36,7 @@ const parseMultipartJsonBody = (
 	}
 	next();
 };
-
+//Done
 router.post(
 	"/",
 	auth(Role.CITIZEN),
@@ -45,16 +45,16 @@ router.post(
 	validateRequest(ServiceRequestValidation.createServiceRequestZodSchema),
 	ServiceRequestController.createServiceRequest,
 );
-
+//Done
 router.get(
 	"/my",
 	auth(Role.CITIZEN),
 	ServiceRequestController.getMyServiceRequests,
 );
-
+//Done
 router.get(
 	"/",
-	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	auth(Role.ADMIN, Role.SUPER_ADMIN),
 	ServiceRequestController.getAllServiceRequests,
 );
 
@@ -141,33 +141,33 @@ router.get(
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	SlaController.getRequestSlaStatus,
 );
-
+//Done
 router.get(
 	"/:id/history",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	ServiceRequestController.getServiceRequestHistory,
 );
-
+//Done
 router.get(
 	"/:id",
 	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
 	ServiceRequestController.getServiceRequestById,
 );
-
+//Done
 router.patch(
 	"/:id/status",
-	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.CITIZEN),
+	auth(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF),
 	validateRequest(ServiceRequestValidation.updateServiceRequestStatusZodSchema),
 	ServiceRequestController.updateServiceRequestStatus,
 );
-
+//Done
 router.patch(
 	"/:id",
 	auth(Role.CITIZEN),
 	validateRequest(ServiceRequestValidation.updateServiceRequestZodSchema),
 	ServiceRequestController.updateServiceRequest,
 );
-
+//Done
 router.delete(
 	"/:id",
 	auth(Role.CITIZEN),
