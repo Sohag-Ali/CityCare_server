@@ -5,14 +5,33 @@ CityCare is an enterprise-grade, configurable digital municipal service and comp
 > [!NOTE]
 > CityCare is a configurable software system for digital civic service administration. It is designed for demonstration and architectural reference and is not an officially deployed government platform.
 
-## [LIVE LINK](https://city-care-beryl.vercel.app)
+### 🔗 Quick Links
+- 🌐 **[Live API Endpoint](https://city-care-beryl.vercel.app)**
+- 📖 **[Postman API Documentation](https://documenter.getpostman.com/view/54817904/2sBYB1N8gV)**
 
+---
 
+## 🔑 Demo & Testing Credentials
 
+For recruiters and evaluators testing the live API endpoints or Postman collection, pre-seeded credentials for all user roles and staff types are provided below:
+
+| Role Icon | System Role | Staff Sub-Type | Email Credentials | Password | Role Scope & Test Access |
+| :---: | :--- | :--- | :--- | :--- | :--- |
+| 👑 | `SUPER_ADMIN` | N/A | `superadmin1@gmail.com` | `Super_admin@1` | Full platform control, admin creation, core system settings |
+| 🛡️ | `ADMIN` | N/A | `testeradmin1@gmail.com` | `Tester_admin@1` | Staff oversight, department setup, assignment & analytics |
+| 👔 | `STAFF` | `OFFICER` | `sohagali1234hot@gmail.com` | `Sohag@123456` | Service request triage, officer review & work assignment |
+| 🛠️ | `STAFF` | `TECHNICIAN` | `sohag1552726@gmail.com` | `Sohag@123456` | Accept assigned tasks, work updates, resolution evidence |
+| 👨‍💼 | `STAFF` | `MANAGER` | `ali22205101426@diu.edu.bd` | `Sohag@123456` | Work verification, quality control (`APPROVED` / `REWORK`) |
+| 👤 | `CITIZEN` | N/A | `sohag.ali.dev@gmail.com` | `Sohag@123456` | Create complaints, photo evidence, bKash service fee payment |
+
+> [!TIP]
+> Authenticate via `POST /api/v1/auth/login` with any of the above credentials to obtain a Bearer JWT token for testing role-restricted endpoints.
 
 ---
 
 ## Table of Contents
+
+- [🔑 Demo & Testing Credentials](#-demo--testing-credentials)
 
 - [1. Project Overview](#1-project-overview)
 - [2. Problem Statement](#2-problem-statement)
