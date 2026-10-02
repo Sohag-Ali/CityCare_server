@@ -59,5 +59,9 @@ router.post(
 	validateRequest(AuthValidation.AdminActivationZodSchema),
 	AuthController.activateAdmin,
 );
+router.post(
+	"/logout",
+	AuthController.logout,
+);
 
 export const AuthRoutes = router;
