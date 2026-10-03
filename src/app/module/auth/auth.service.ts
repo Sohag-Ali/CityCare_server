@@ -53,6 +53,10 @@ const registerCitizen = async (payload: IRegisterCitizenPayload) => {
 	const otpKey = `citizen-registration-otp:${email}`;
 	const otpValue = crypto.randomInt(100000, 1000000).toString();
 
+	// if(config.node_env === "development") {
+	// 	console.log(`OTP for ${email}: ${otpValue}`);
+	// }
+
 	await redisClient.set(otpKey, otpValue, {
 		expiration: {
 			type: "EX",
