@@ -59,6 +59,10 @@ const CitizenEmailVerifyZodSchema = z.object({
 	otp: z.string().length(6),
 });
 
+const resendRegistrationOtpValidationSchema = z.object({
+	email: z.email("Email is not in correct format"),
+});
+
 const StaffActivationZodSchema = z.object({
 	email: z.string().email("Invalid email format"),
 	otp: z.string().length(6, "OTP must be 6 digits"),
@@ -78,6 +82,7 @@ export const AuthValidation = {
 	ForgotPasswordZodSchema,
 	ResetPasswordZodSchema,
 	CitizenEmailVerifyZodSchema,
+	resendRegistrationOtpValidationSchema,
 	StaffActivationZodSchema,
 	AdminActivationZodSchema,
 };

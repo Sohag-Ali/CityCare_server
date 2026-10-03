@@ -56,6 +56,19 @@ const verifyCitizenEmail = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
+const resendRegistrationOtp = catchAsync(async (req: Request, res: Response) => {
+	const payload = req.body;
+
+	await AuthService.resendRegistrationOtp(payload);
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "A new verification code has been sent to your email.",
+		data: null,
+	});
+});
+
 const loginUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = AuthValidation.loginSchema.safeParse(req.body);
 
@@ -264,6 +277,7 @@ export const AuthController = {
 	forgotPassword,
 	resetPassword,
 	verifyCitizenEmail,
+	resendRegistrationOtp,
 	activateStaff,
 	activateAdmin,
 	logout,

@@ -19,6 +19,10 @@ export interface IVerifyEmailPayload {
 	otp: string;
 }
 
+export interface IResendRegistrationOtpPayload {
+	email: string;
+}
+
 export interface IRegisterCitizenPayload {
 	name: string;
 	email: string;

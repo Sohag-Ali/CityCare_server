@@ -27,6 +27,7 @@ import type {
 	ILoginUserPayload,
 	IRegisterCitizenPayload,
 	IRequestUser,
+	IResendRegistrationOtpPayload,
 	IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface";
@@ -217,6 +218,100 @@ const verifyCitizenEmail = async (payload: IVerifyEmailPayload) => {
 		user,
 		citizen,
 	};
+};
+
+const resendRegistrationOtp = async (
+	payload: IResendRegistrationOtpPayload,
+) => {
+	const email = payload.email.trim().toLowerCase();
+	const registrationDataKey = `citizen-registration-data:${email}`;
+	const redisCitizenData = await redisClient.get(registrationDataKey);
+
+	if (!redisCitizenData) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Registration session expired. Please register again.",
+		);
+	}
+
+	const cooldownKey = `citizen-registration-resend-cooldown:${email}`;
+	const cooldown = await redisClient.get(cooldownKey);
+
+	if (cooldown) {
+		throw new AppError(
+			httpStatus.TOO_MANY_REQUESTS,
+			"Please wait before requesting another verification code.",
+		);
+	}
+
+	const resendCountKey = `citizen-registration-resend-count:${email}`;
+	const resendCount = Number((await redisClient.get(resendCountKey)) ?? 0);
+
+	if (resendCount >= 5) {
+		throw new AppError(
+			httpStatus.TOO_MANY_REQUESTS,
+			"Too many verification code requests. Please try again later.",
+		);
+	}
+
+	const existingUser = await prisma.user.findUnique({
+		where: { email },
+	});
+
+	if (existingUser?.emailVerified) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"Email is already verified. Please login.",
+		);
+	}
+
+	const otpValue = crypto.randomInt(100000, 1000000).toString();
+	const otpKey = `citizen-registration-otp:${email}`;
+	const expirationSeconds = 2 * 60;
+
+	await redisClient.set(otpKey, otpValue, {
+		expiration: {
+			type: "EX",
+			value: expirationSeconds,
+		},
+	});
+
+	await redisClient.set(cooldownKey, "1", {
+		expiration: {
+			type: "EX",
+			value: 60,
+		},
+	});
+
+	await redisClient.set(resendCountKey, String(resendCount + 1), {
+		expiration: {
+			type: "EX",
+			value: 60 * 60,
+		},
+	});
+
+	const redisPayload = JSON.parse(redisCitizenData);
+	const { name } = redisPayload;
+	const templatePath = path.join(
+		process.cwd(),
+		"src/app/templates/registration-user-otp.ejs",
+	);
+
+	const templateData = {
+		name,
+		email,
+		otp: otpValue,
+		expirationMinutes: 2,
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+
+	await transporter.sendMail({
+		from: config.email_sender,
+		to: email,
+		subject: "CityCare — New Verification Code",
+		html,
+	});
 };
 
 const loginUser = async (
@@ -746,5 +841,6 @@ export const AuthService = {
 	forgotPassword,
 	resetPassword,
 	verifyCitizenEmail,
+	resendRegistrationOtp,
 	activateStaff,
 };

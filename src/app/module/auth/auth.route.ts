@@ -20,6 +20,12 @@ router.post(
 );
 
 router.post(
+	"/resend-registration-otp",
+	validateRequest(AuthValidation.resendRegistrationOtpValidationSchema),
+	AuthController.resendRegistrationOtp,
+);
+
+router.post(
 	"/login",
 	validateRequest(AuthValidation.loginSchema),
 	AuthController.loginUser,
