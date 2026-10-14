@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node api.js && tsx watch src/server.ts",
-    "build": "tsup",
+    "build": "node api.js && tsup",
     "start": "node api.js && node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format:check": "npx @biomejs/biome format ./src",
